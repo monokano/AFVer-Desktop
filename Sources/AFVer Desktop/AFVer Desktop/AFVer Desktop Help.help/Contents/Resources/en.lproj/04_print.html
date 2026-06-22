@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="AppleTitle" content="Printing and Exporting">
+<title>Printing and Exporting</title>
+<link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+<p class="breadcrumb"><a href="index.html">AFVer Desktop Help</a> › Printing and Exporting</p>
+<h1>Printing and Exporting</h1>
+<p>The list you are viewing can be kept as a print, PDF, or CSV. If you output it with the versions shown, you get a record that tells you the contents and their versions without opening any files. Print the contents of a CD-R or DVD-R and keep it together with the disc, and you can check what is inside without mounting it.</p>
+
+<h2>Printing</h2>
+<ol class="steps">
+  <li>Expand the list to the state you want to print (use Expand All if needed).</li>
+  <li>Choose "Print…" (<kbd>⌘P</kbd>) from the "File" menu, or click the Print button in the toolbar.</li>
+  <li>The standard macOS print dialog opens. Check the preview, then print or save as PDF.</li>
+</ol>
+
+<div class="note">
+  <strong>Note</strong>
+  What gets printed is "the state currently expanded on screen." The contents of collapsed folders are not printed. To show every level, use Expand All first.
+</div>
+
+<h3>What is printed</h3>
+<ul>
+  <li><strong>Header</strong>: the icon, name, and total size of the open folder (or volume). The print date and time appears at the far right.</li>
+  <li><strong>List</strong>: the same columns as on screen. Folders show a mark indicating their expanded state (∨ / &gt;). Icons are printed as well. When the Version column is shown, the <a href="03_version.html">color dots at the start of each row</a> are printed too.</li>
+  <li><strong>Footer</strong>: the page number.</li>
+</ul>
+
+<h3>Page orientation</h3>
+<p>The default is A4 portrait. <strong>When the Version column is shown (the switch is on), the orientation automatically becomes landscape</strong>, because the extra column does not fit well across the page. You can also change the orientation manually in the print dialog.</p>
+
+<div class="note">
+  <strong>About the total size</strong>
+  When printing the root of a volume, the total used space of the entire disk is shown immediately. For an ordinary folder, the contents are totaled, but if this does not finish within 3 seconds the size is not shown (so that no incomplete value is displayed).
+</div>
+
+<h2>Export as CSV</h2>
+<p>You can save the contents of the list as a CSV file that opens in spreadsheet apps. This is handy when you want to keep a searchable catalog.</p>
+<ol class="steps">
+  <li>Expand the list to the state you want to export.</li>
+  <li>Choose "Export as CSV…" (<kbd>⌘E</kbd>) from the "File" menu.</li>
+  <li>Choose a destination and save.</li>
+</ol>
+<p>As with printing, what gets exported is "the state currently expanded on screen." The Name column uses indentation so that the hierarchy is clear.</p>
+
+<div class="note">
+  <strong>Tip</strong>
+  The exported CSV opens directly in Excel (it is set up so the text does not become garbled).
+</div>
+</body>
+</html>

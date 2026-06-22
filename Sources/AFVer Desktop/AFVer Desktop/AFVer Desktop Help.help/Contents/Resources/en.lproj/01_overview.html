@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="AppleTitle" content="About AFVer Desktop">
+<title>About AFVer Desktop</title>
+<link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+<p class="breadcrumb"><a href="index.html">AFVer Desktop Help</a> › About AFVer Desktop</p>
+<h1>About AFVer Desktop</h1>
+
+<h2>What this app does</h2>
+<p>Adobe InDesign and Illustrator files can shift in layout or lose features when opened in a version different from the one that created them. To avoid trouble, it is safest to know the creation version before opening a file.</p>
+<p>AFVer Desktop reads the creation version recorded inside each file and shows the contents of a folder or volume in a Finder-style list. Even when InDesign and Illustrator files are mixed together, it lines up the creation versions of many files in a single list. Without opening files one by one, you can see at a glance which file was created with which version.</p>
+<p>This helps when you want to check the versions of your own documents before delivery, or quickly review the files included in data you have received.</p>
+
+<div class="note">
+  <strong>Note</strong>
+  Here, "creation version" is not the version of the app that first created the file, but the version of the app that last saved it. "Last-saved app version" would be more accurate, but by convention we call it the creation version.
+</div>
+
+<h2>List columns</h2>
+<p>By default, the following 4 columns are shown.</p>
+<dl>
+  <dt>Name</dt>
+  <dd>The icon and name of the file or folder. Folders can be expanded with &gt;.</dd>
+
+  <dt>Date Modified</dt>
+  <dd>The date and time of last modification.</dd>
+
+  <dt>Size</dt>
+  <dd>The file size. Folders are not totaled and show <kbd>--</kbd>.</dd>
+
+  <dt>Kind</dt>
+  <dd>The kind of file. Shows the kind name as determined by macOS.</dd>
+</dl>
+<p>When you turn on the switch in the toolbar, a <a href="03_version.html">"Version" column</a> is inserted between "Size" and "Kind" to show the creation version of Adobe documents.</p>
+
+<h2>What is hidden, and special handling</h2>
+<ul>
+  <li><strong>Invisible files</strong> (dot files and files with the hidden flag) are not shown.</li>
+  <li><strong>Applications (.app) and packages</strong> are treated as a single file; their contents are not expanded.</li>
+  <li><strong>Aliases and symbolic links</strong> are shown as a single item; the link is not followed to its target.</li>
+</ul>
+
+<div class="note">
+  <strong>Note</strong>
+  The list is a snapshot taken at the moment the folder was loaded. If the contents change afterward in Finder or elsewhere, the list is not updated automatically.
+</div>
+
+<h2>Saved settings</h2>
+<p>The following are remembered even after you quit the app, and are restored the next time you launch it.</p>
+<ul>
+  <li>Window size and position</li>
+  <li>The width and order of each column</li>
+  <li>The toolbar switch (Version column) on/off state</li>
+  <li>Version Detail (Detailed / Simple)</li>
+  <li>The status bar's shown/hidden state</li>
+</ul>
+<p>The sort state is not remembered. Each time you open a folder, it starts sorted by name in ascending order.</p>
+</body>
+</html>

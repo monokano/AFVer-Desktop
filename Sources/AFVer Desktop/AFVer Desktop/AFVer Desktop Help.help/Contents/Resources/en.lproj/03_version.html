@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="AppleTitle" content="Adobe Document Creation Version">
+<title>Adobe Document Creation Version</title>
+<link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+<p class="breadcrumb"><a href="index.html">AFVer Desktop Help</a> › Adobe Document Creation Version</p>
+<h1>Adobe Document Creation Version</h1>
+
+<h2>About this feature</h2>
+<p>Adobe InDesign and Illustrator documents record the version of the app that created them inside the file. When you turn on the switch at the far right of the toolbar, AFVer Desktop reads this creation version from supported files and displays it.</p>
+<p>Because you can see at a glance which version each file was made with, this is useful when you want to know the version before opening a file.</p>
+
+<div class="note">
+  <strong>Note</strong>
+  Here, "creation version" is not the version of the app that first created the file, but the version of the app that last saved it. "Last-saved app version" would be more accurate, but by convention we call it the creation version.
+</div>
+
+<h2>How to turn it on</h2>
+<ol class="steps">
+  <li>Turn on the switch at the far right of the toolbar.</li>
+  <li>A "Version" column is added between "Size" and "Kind."</li>
+  <li>The creation version of each supported file appears in turn. While being read it shows <kbd>…</kbd>, and changes to the actual value once determined.</li>
+</ol>
+<p>The on/off state of the switch is remembered and restored the next time you launch the app.</p>
+
+<div class="note">
+  <strong>Note</strong>
+  The window widens automatically to make room for the Version column. Turn the switch off and the column disappears and the window width returns to normal.
+</div>
+
+<h2>Supported files</h2>
+<dl>
+  <dt>InDesign</dt>
+  <dd>.indd / .indt / .indl / .indb / .idml.</dd>
+
+  <dt>Illustrator / Photoshop</dt>
+  <dd>.ai / .ait / .eps / .psd / .psb / .pdf, and files without an extension (only those identified as Illustrator or Photoshop from their contents).</dd>
+</dl>
+<p>Other files are not supported. The Version column is left blank, and the Kind column stays as its normal display.</p>
+
+<h2>How the display changes</h2>
+<p>When the switch is on, supported files change as follows.</p>
+<dl>
+  <dt>Version column</dt>
+  <dd>Shows the creation version (for example, <kbd>CC 2017 (12.1.0)</kbd> or <kbd>2026 (30.3)</kbd>). Blank if it cannot be read.</dd>
+
+  <dt>Kind column</dt>
+  <dd>Instead of the macOS kind name, it changes to a more detailed, dedicated kind name (for example, <kbd>InDesign Document (.indd)</kbd> or <kbd>Adobe Illustrator format (.ai)</kbd>).</dd>
+</dl>
+
+<div class="warning">
+  <strong>Watch for extension spoofing</strong>
+  If a file's contents do not match its extension (for example, the contents are EPS but the extension is <kbd>.ai</kbd>), a warning mark <b style="color:#B22A22">⚠</b> appears at the start of the Kind column. This helps you spot files whose extension alone has been changed. By default both this <b style="color:#B22A22">⚠</b> mark and the kind name are shown in red. Turn off "Show kind in red for disguised extensions" in <a href="05_settings.html">Settings</a> to make only the <b style="color:#B22A22">⚠</b> mark red, while the kind name keeps its normal color.
+</div>
+
+<div class="note">
+  <strong>About the Photoshop version</strong>
+  Photoshop <kbd>.psd</kbd> / <kbd>.psb</kbd> and editing-capable <kbd>.pdf</kbd> files <b>also show the version by default</b>. However, reading it takes time, so if the wait bothers you on slow media such as CD-R with many files, you can turn off "Detect Photoshop version" in <a href="05_settings.html">Settings</a> (the kind name and color dot are still shown when off). Files saved with Photoshop 2019 or earlier have no version record, so they stay blank even when this is on. Photoshop <kbd>.eps</kbd> is shown regardless of this setting.
+</div>
+
+<h2>Color dots at the start of each row</h2>
+<p>At the left edge of each row in the Version column, a small colored dot shows the app family of a supported file. This makes it easy to tell at a glance which files are supported and which app each document belongs to. The dot remains even when the version cannot be read and the value is blank.</p>
+<ul>
+  <li><b style="color:#FF3366">●</b> Pink: InDesign</li>
+  <li><b style="color:#FF9A00">●</b> Orange: Illustrator</li>
+  <li><b style="color:#8E8E93">●</b> Gray: PDF (whether or not it retains editing features)</li>
+  <li><b style="color:#31A8FF">●</b> Blue: Photoshop</li>
+</ul>
+<p>These color dots are printed the same way in prints and PDFs.</p>
+
+<h2>Version Detail (Detailed / Simple)</h2>
+<p>You can choose how precisely the version is shown, "Detailed" or "Simple." The difference is whether it shows down to the patch version (x.x.x) or limits it to (x.x).</p>
+<dl>
+  <dt>Detailed (x.x.x)</dt>
+  <dd>Shows down to the patch version (for example, <kbd>CC 2017 (12.1.0)</kbd>).</dd>
+
+  <dt>Simple (x.x)</dt>
+  <dd>Limits the version to <kbd>(x.x)</kbd> (for example, <kbd>(12.1)</kbd>). It also does not read the version of Photoshop <kbd>.psd</kbd> / <kbd>.psb</kbd> or editing-capable <kbd>.pdf</kbd> files (regardless of whether "Detect Photoshop version" is on or off). These take time to read, so they are skipped in "Simple," which favors speed.</dd>
+</dl>
+<p>"Simple" not only shortens the display but also reads less of some files. InDesign documents in particular read only the start of the file, so on slow media such as CD-R, DVD-R, or over a network, reading takes much less time. For files whose reading method does not change, such as Illustrator, the speed is almost the same.</p>
+<p>You can switch from either of the following. The setting is remembered and restored the next time you launch the app.</p>
+<ul>
+  <li>The <strong>"Version Detail"</strong> control in the toolbar (switch between "Detailed" and "Simple").</li>
+  <li>The <strong>"Version Detail"</strong> submenu in the "View" menu.</li>
+</ul>
+
+<div class="note">
+  <strong>Optical discs and networks default to "Simple"</strong>
+  Windows that open a folder on a CD/DVD/BD or a network share automatically read in "Simple" mode (because these are slow to read). This is a temporary change for <b>that window only</b>; your saved setting does not change. Other windows and local disks follow the saved setting. If needed, you can switch that window back to "Detailed" manually.
+</div>
+</body>
+</html>

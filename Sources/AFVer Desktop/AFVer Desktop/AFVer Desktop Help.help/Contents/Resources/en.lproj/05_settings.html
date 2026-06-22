@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="AppleTitle" content="Settings">
+<title>Settings</title>
+<link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+<p class="breadcrumb"><a href="index.html">AFVer Desktop Help</a> › Settings</p>
+<h1>Settings</h1>
+
+<p>Open the Settings window from the menu bar via "AFVer Desktop" → "Settings…" (<kbd>⌘,</kbd>), or from the "Settings…" item in the Dock icon menu. Changes apply immediately to every window and are restored the next time you launch the app.</p>
+
+<h2>Folder Double-Click</h2>
+<p>Choose what happens when you double-click a folder row in the list. Expanding and collapsing with the &gt; to the left of the name works with either choice.</p>
+<dl>
+  <dt>Expand / Collapse (default)</dt>
+  <dd>Double-clicking expands or collapses that folder in place.</dd>
+
+  <dt>Open in New Window</dt>
+  <dd>Double-clicking opens that folder in a new window. Double-clicking a file does nothing.</dd>
+</dl>
+
+<h2>Stripe list background</h2>
+<p>When on, the list background uses Finder-style alternating colors (stripes). When off, there are no stripes and a horizontal separator line is shown.</p>
+<p>Default: off</p>
+
+<div class="note">
+  <strong>Note</strong>
+  This setting changes only the look of the list on screen. Prints and PDFs are output on a white background regardless of the setting, with a separator line only under the header.
+</div>
+
+<h2>Show kind in red for disguised extensions</h2>
+<p>Chooses how the "Kind" column looks when a file's contents do not match its extension (<a href="03_version.html">extension spoofing</a>). When on (the default), a warning mark <b style="color:#B22A22">⚠</b> appears at the start of the Kind column and the kind name itself is also shown in red, for clear emphasis. When off, only the <b style="color:#B22A22">⚠</b> mark is red and the kind name keeps its normal color (spoofing is still visible when off).</p>
+<p>Default: on</p>
+
+<h2>Detect Photoshop version</h2>
+<p>Chooses whether to read the creation version of Photoshop <kbd>.psd</kbd> / <kbd>.psb</kbd> files and Photoshop-editing-capable <kbd>.pdf</kbd> files (shown in the Kind column as "PDF with Photoshop native data (.pdf)"). When on (the default), these versions are also shown in the <a href="03_version.html">Version column</a>. When off, they are not read and the Version column is left blank for these files. Kind detection (showing "Photoshop format (.psd)" and the color dot at the start of the row) is performed as usual whether this is on or off.</p>
+<p>Default: on</p>
+
+<div class="note">
+  <strong>Reading these versions is slower</strong>
+  Reading the version from these files requires following deep into the file's internals and takes longer than other formats. In particular, files saved with Photoshop 2019 or earlier have no version record at all, so even reading to the end shows nothing. On slow media such as CD-R or DVD-R with many files, if the wait bothers you, turning this off makes reading faster.
+</div>
+
+<div class="note">
+  <strong>It may still not appear when on</strong>
+  Files saved with Photoshop 2019 or earlier stay blank because they have no version record. Also, when <a href="03_version.html">Version Detail</a> is "Simple" (including windows that automatically become "Simple" for CD/DVD/network), this reading is skipped to favor speed. Note that Photoshop <kbd>.eps</kbd> is light to read, so it always shows the version regardless of this setting.
+</div>
+</body>
+</html>

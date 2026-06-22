@@ -1,0 +1,631 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "%1$lld of %2$lld selected": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%2$lld項目中の%1$lld項目を選択"
+          }
+        }
+      }
+    },
+    "%lld items": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld項目"
+          }
+        }
+      }
+    },
+    "AFVer Desktop Help": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AFVer Desktop ヘルプ"
+          }
+        }
+      }
+    },
+    "AFVer Desktop may need Full Disk Access. Open System Settings > Privacy & Security > Full Disk Access, turn on AFVer Desktop, then drop the folder again.": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AFVer Desktop にフルディスクアクセスが必要な可能性があります。「システム設定 > プライバシーとセキュリティ > フルディスクアクセス」で AFVer Desktop をオンにしてから、もう一度フォルダをドロップしてください。"
+          }
+        }
+      }
+    },
+    "Adobe Document Creation Version": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adobe書類の作成バージョン"
+          }
+        }
+      }
+    },
+    "Adobe Illustrator Document": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adobe Illustrator 書類"
+          }
+        }
+      }
+    },
+    "Alias": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "エイリアス"
+          }
+        }
+      }
+    },
+    "Back": {},
+    "Cancel": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "キャンセル"
+          }
+        }
+      }
+    },
+    "Change Log": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更新履歴"
+          }
+        }
+      }
+    },
+    "Collapse All": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "すべて閉じる"
+          }
+        }
+      }
+    },
+    "Copy": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "コピー"
+          }
+        }
+      }
+    },
+    "Copy as Pathname": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "パスをコピー"
+          }
+        }
+      }
+    },
+    "Could not read the dropped folder": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ドロップされたフォルダを読み込めませんでした"
+          }
+        }
+      }
+    },
+    "Date Modified": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "変更日"
+          }
+        }
+      }
+    },
+    "Detailed": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "詳細"
+          }
+        }
+      }
+    },
+    "Detailed (x.x.x)": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "詳細 (x.x.x)"
+          }
+        }
+      }
+    },
+    "Detect Photoshop version": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Photoshop形式のバージョンを検出する"
+          }
+        }
+      }
+    },
+    "Document": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "書類"
+          }
+        }
+      }
+    },
+    "Drop folders or files": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "フォルダ・ファイルをドロップ"
+          }
+        }
+      }
+    },
+    "Expand / Collapse": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "展開／閉じる"
+          }
+        }
+      }
+    },
+    "Expand All": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "すべて展開"
+          }
+        }
+      }
+    },
+    "Export as CSV…": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CSVとして書き出す…"
+          }
+        }
+      }
+    },
+    "File List": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ファイル一覧"
+          }
+        }
+      }
+    },
+    "Folder": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "フォルダ"
+          }
+        }
+      }
+    },
+    "Folder Double-Click": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "フォルダのダブルクリック"
+          }
+        }
+      }
+    },
+    "Forward": {},
+    "GitHub Releases": {},
+    "Hello, world!": {
+      "extractionState": "stale",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "こんにちは、世界！"
+          }
+        }
+      }
+    },
+    "Hide Status Bar": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ステータスバーを隠す"
+          }
+        }
+      }
+    },
+    "Illustrator EPS format (.eps)": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Illustrator EPS 形式 (.eps)"
+          }
+        }
+      }
+    },
+    "Illustrator Template format (.ait)": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Illustrator Template 形式 (.ait)"
+          }
+        }
+      }
+    },
+    "Illustrator format (.ai)": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Illustrator 形式 (.ai)"
+          }
+        }
+      }
+    },
+    "InDesign Book (.indb)": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "InDesign ブック (.indb)"
+          }
+        }
+      }
+    },
+    "InDesign Document (.indd)": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "InDesign ドキュメント (.indd)"
+          }
+        }
+      }
+    },
+    "InDesign Library (.indl)": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "InDesign ライブラリ (.indl)"
+          }
+        }
+      }
+    },
+    "InDesign Markup (.idml)": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "InDesign マークアップ (.idml)"
+          }
+        }
+      }
+    },
+    "InDesign Template (.indt)": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "InDesign テンプレート (.indt)"
+          }
+        }
+      }
+    },
+    "Kind": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "種類"
+          }
+        }
+      }
+    },
+    "Large Document format (.psb)": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ビッグドキュメント形式 (.psb)"
+          }
+        }
+      }
+    },
+    "Name": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "名前"
+          }
+        }
+      }
+    },
+    "None": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "なし"
+          }
+        }
+      }
+    },
+    "Open System Settings": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "システム設定を開く"
+          }
+        }
+      }
+    },
+    "Open in New Window": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新規ウインドウで表示"
+          }
+        }
+      }
+    },
+    "PDF with Illustrator native data (.pdf)": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PDF - Illustrator 編集機能保持 (.pdf)"
+          }
+        }
+      }
+    },
+    "PDF with Photoshop native data (.pdf)": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PDF - Photoshop 編集機能保持 (.pdf)"
+          }
+        }
+      }
+    },
+    "PDF without native data (Ai, Ps) (.pdf)": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PDF - 編集機能なし (Ai, Ps) (.pdf)"
+          }
+        }
+      }
+    },
+    "Photoshop EPS format (.eps)": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Photoshop EPS 形式 (.eps)"
+          }
+        }
+      }
+    },
+    "Photoshop format (.psd)": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Photoshop 形式 (.psd)"
+          }
+        }
+      }
+    },
+    "Print Columns": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "印刷する列"
+          }
+        }
+      }
+    },
+    "Print…": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "プリント…"
+          }
+        }
+      }
+    },
+    "Settings": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "設定"
+          }
+        }
+      }
+    },
+    "Settings…": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "設定…"
+          }
+        }
+      }
+    },
+    "Show Path": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "パスを表示"
+          }
+        }
+      }
+    },
+    "Show Status Bar": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ステータスバーを表示"
+          }
+        }
+      }
+    },
+    "Show in Finder": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finderに表示"
+          }
+        }
+      }
+    },
+    "Show kind in red for disguised extensions": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "拡張子が偽装されていたら種類を赤文字にする"
+          }
+        }
+      }
+    },
+    "Simple": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "簡易"
+          }
+        }
+      }
+    },
+    "Simple (x.x)": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "簡易 (x.x)"
+          }
+        }
+      }
+    },
+    "Size": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "サイズ"
+          }
+        }
+      }
+    },
+    "Stripe list background": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "リストの背景をストライプにする"
+          }
+        }
+      }
+    },
+    "Template": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Template"
+          }
+        }
+      }
+    },
+    "Unknown": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不明"
+          }
+        }
+      }
+    },
+    "Version": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "バージョン"
+          }
+        }
+      }
+    },
+    "Version Detail": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "バージョンの精度"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.1"
+}

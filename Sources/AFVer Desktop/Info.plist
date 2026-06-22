@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  Dockアイコン（および Finder「このアプリケーションで開く」）へのドロップを受け付けるための
+	  ドキュメントタイプ宣言。GENERATE_INFOPLIST_FILE = YES と併用し、このファイルの内容が生成
+	  Info.plist にマージされる。LSHandlerRank = None：どのタイプのデフォルトアプリ候補としても
+	  優先されないようにする。
+	  ・Folder：フォルダ/ボリューム → それぞれ中身を一覧（1つずつウインドウ）
+	  ・Item ：上記以外（ファイル/パッケージ/エイリアス等）→ まとめて1枚のフラットリスト
+	    （public.item は全アイテムの基底型。フォルダ判定は application(_:open:) 側で振り分ける）
+	-->
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Folder</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>None</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.folder</string>
+				<string>public.volume</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Item</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>None</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.item</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>
