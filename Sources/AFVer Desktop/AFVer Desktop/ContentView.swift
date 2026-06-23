@@ -209,7 +209,10 @@ struct ContentView: View {
                 AppDelegate.shared?.beginProgrammaticWindowBatch(expectedContentWindowCount: count)
             }
         )
-        .ignoresSafeArea()
+        // safe area を尊重し、リストをツールバー下にきっちり収める。
+        // 以前は .ignoresSafeArea() で不透明なリストを天井まで広げていたが、
+        // macOS Tahoe(26) の Liquid Glass ツールバーは透過率が高く、潜り込んだ行が
+        // 透けて二重写しに見える（キモい表示）。上端をツールバー下で止めて透けを防ぐ。
     }
 }
 
