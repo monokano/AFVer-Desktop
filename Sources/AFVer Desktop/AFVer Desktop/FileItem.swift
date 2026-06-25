@@ -67,6 +67,7 @@ extension AppFamily {
         case .photoshop:   return NSColor(red: 0.19, green: 0.66, blue: 1.00, alpha: 1) // #31A8FF
         case .indesign:    return NSColor(red: 1.00, green: 0.20, blue: 0.40, alpha: 1) // #FF3366
         case .pdf:         return .secondaryLabelColor                                  // 汎用PDF（中立）
+        case .epsOther:    return .secondaryLabelColor                                  // generic EPS（中空リングの線色）
         }
     }
 }

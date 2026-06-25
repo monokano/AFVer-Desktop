@@ -25,9 +25,10 @@ struct ToolbarConfigurator: NSViewRepresentable {
     let versionDetail: VersionDetail
     /// 精度切替時のコールバック
     let onSetVersionDetail: (VersionDetail) -> Void
-    /// ツールバーボタン：すべて展開／すべて閉じる／プリント
+    /// ツールバーボタン：すべて展開／すべて閉じる／列幅を調整／プリント
     var onExpandAll: (() -> Void)?
     var onCollapseAll: (() -> Void)?
+    var onAdjustColumns: (() -> Void)?
     var onPrint: (() -> Void)?
 
     func makeCoordinator() -> ToolbarCoordinator {
@@ -45,6 +46,7 @@ struct ToolbarConfigurator: NSViewRepresentable {
         context.coordinator.onSetVersionDetail = onSetVersionDetail
         context.coordinator.onExpandAll = onExpandAll
         context.coordinator.onCollapseAll = onCollapseAll
+        context.coordinator.onAdjustColumns = onAdjustColumns
         context.coordinator.onPrint = onPrint
         context.coordinator.update(folderURL: folderURL, hasContent: hasContent,
                                    isFlatList: isFlatList,
@@ -75,6 +77,7 @@ final class ToolbarCoordinator: NSObject, NSToolbarDelegate, NSToolbarItemValida
     private static let detailItemID = NSToolbarItem.Identifier("VersionDetail")
     private static let expandItemID = NSToolbarItem.Identifier("ExpandAll")
     private static let collapseItemID = NSToolbarItem.Identifier("CollapseAll")
+    private static let adjustItemID = NSToolbarItem.Identifier("AdjustColumns")
     private static let printItemID = NSToolbarItem.Identifier("PrintList")
 
     private weak var window: NSWindow?
@@ -98,6 +101,7 @@ final class ToolbarCoordinator: NSObject, NSToolbarDelegate, NSToolbarItemValida
     /// ツールバーボタンのコールバック
     var onExpandAll: (() -> Void)?
     var onCollapseAll: (() -> Void)?
+    var onAdjustColumns: (() -> Void)?
     var onPrint: (() -> Void)?
 
     override init() {
@@ -201,6 +205,10 @@ final class ToolbarCoordinator: NSObject, NSToolbarDelegate, NSToolbarItemValida
         onCollapseAll?()
     }
 
+    @objc private func adjustColumnsClicked(_ sender: Any?) {
+        onAdjustColumns?()
+    }
+
     @objc private func printClicked(_ sender: Any?) {
         onPrint?()
     }
@@ -245,6 +253,10 @@ final class ToolbarCoordinator: NSObject, NSToolbarDelegate, NSToolbarItemValida
             return makeButtonItem(id: itemIdentifier, symbol: "chevron.up",
                                   title: String(localized: "Collapse All"),
                                   action: #selector(collapseAllClicked(_:)))
+        case Self.adjustItemID:
+            return makeButtonItem(id: itemIdentifier, symbol: "arrow.left.and.right",
+                                  title: String(localized: "Adjust Column Widths"),
+                                  action: #selector(adjustColumnsClicked(_:)))
         case Self.printItemID:
             return makeButtonItem(id: itemIdentifier, symbol: "printer",
                                   title: String(localized: "Print…"),
@@ -271,13 +283,13 @@ final class ToolbarCoordinator: NSObject, NSToolbarDelegate, NSToolbarItemValida
     func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
         // 左端にタイトル、右側に［展開］［閉じる］［プリント］、間隔を空けてスイッチ
         [Self.titleItemID, .flexibleSpace,
-         Self.expandItemID, Self.collapseItemID, Self.printItemID,
+         Self.expandItemID, Self.collapseItemID, Self.adjustItemID, Self.printItemID,
          .space, Self.detailItemID, Self.switchItemID]
     }
 
     func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
         [Self.titleItemID, .flexibleSpace,
-         Self.expandItemID, Self.collapseItemID, Self.printItemID,
+         Self.expandItemID, Self.collapseItemID, Self.adjustItemID, Self.printItemID,
          .space, Self.detailItemID, Self.switchItemID]
     }
 }

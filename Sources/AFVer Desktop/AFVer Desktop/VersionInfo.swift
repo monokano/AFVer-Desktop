@@ -10,7 +10,7 @@
 import Foundation
 
 /// 作成バージョン表示の対象アプリ系統（行頭のカラードットで識別）。
-enum AppFamily: Sendable { case illustrator, photoshop, indesign, pdf }
+enum AppFamily: Sendable { case illustrator, photoshop, indesign, pdf, epsOther }
 
 /// バージョン取得の精度モード。
 /// - full: 従来どおり詳細取得（InDesign は xref でファイル全体を読み minor.patch まで確定）
@@ -97,9 +97,11 @@ nonisolated enum VersionInfo {
             let kindText = aiKindText(fc)
             // 種類名が確定しない（kind="" 等）ものは対象外として macOS 任せに戻す
             guard !kindText.isEmpty else { return nil }
+            // generic EPS（Illustrator/Photoshop 以外）は素性不明として常に警告（Glow Ai と一貫）。
+            let isGenericEPS = fc.kind == "EPS" && !fc.isIllustratorFile && fc.appName != "Photoshop"
             return VersionResolution(version: aiFormatVersion(fc),
                                      kindOverride: kindText,
-                                     extMismatch: aiExtMismatch(kind: fc.kind, ext: ext),
+                                     extMismatch: isGenericEPS || aiExtMismatch(kind: fc.kind, ext: ext),
                                      family: aiFamily(fc))
         }
 
@@ -119,7 +121,7 @@ nonisolated enum VersionInfo {
         switch fc.kind {
         case "PSD", "PSB": return .photoshop
         case "Ai":         return .illustrator
-        case "EPS":        return fc.isIllustratorFile ? .illustrator : (isPhotoshop ? .photoshop : .pdf)
+        case "EPS":        return fc.isIllustratorFile ? .illustrator : (isPhotoshop ? .photoshop : .epsOther)
         case "PDF":        return .pdf   // 種類がPDFのものは（native data 有無に関わらず）グレー
         default:           return .pdf
         }
@@ -213,7 +215,11 @@ nonisolated enum VersionInfo {
             } else if isPhotoshop {
                 return String(localized: "Photoshop EPS format (.eps)")
             } else {
-                return String(localized: "Unknown")
+                // Illustrator/Photoshop いずれでもない EPS。生成元（creator1）を畳み込む。空なら「生成元不明」。
+                let producer = fc.creator1.isEmpty
+                    ? String(localized: "Unknown producer")
+                    : fc.creator1
+                return String(format: String(localized: "EPS format - %@ (.eps)"), producer)
             }
         case "PSD":
             return String(localized: "Photoshop format (.psd)")

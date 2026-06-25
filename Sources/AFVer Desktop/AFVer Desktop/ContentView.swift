@@ -69,6 +69,7 @@ struct ContentView: View {
             onSetVersionDetail: { model.setVersionDetail($0) },
             onExpandAll: { model.expandAll() },
             onCollapseAll: { model.collapseAll() },
+            onAdjustColumns: { model.adjustColumnWidths() },
             onPrint: { model.printList() }
         ))
         .onDrop(of: [.fileURL], isTargeted: $model.isDropTargeted) { providers in
@@ -231,9 +232,14 @@ private struct StatusBarView: View {
                 ForEach(summary.perFamily, id: \.family) { entry in
                     // ドット集計はドット＋番号のみ（「項目」なし・ドットと番号の間は 4pt）。
                     HStack(spacing: 4) {
-                        Circle()
-                            .fill(Color(nsColor: entry.family.markerColor))
-                            .frame(width: 8, height: 8)
+                        Group {
+                            if entry.family == .epsOther {
+                                Circle().strokeBorder(Color(nsColor: entry.family.markerColor), lineWidth: 1.5)
+                            } else {
+                                Circle().fill(Color(nsColor: entry.family.markerColor))
+                            }
+                        }
+                        .frame(width: 8, height: 8)
                         Text(String(entry.count))
                     }
                 }
@@ -734,6 +740,11 @@ final class FileListModel: ObservableObject {
         treeActions?.collapseAll()
     }
 
+    /// 列幅を調整（⌘J）：変更日・サイズ・バージョン・種類を内容に合わせる（種類を省略させない）。
+    func adjustColumnWidths() {
+        treeActions?.adjustColumnWidths()
+    }
+
     /// 未読み込みのフォルダを再帰的に読み込む。
     /// フォルダ1つ読み込むごとに yield して、プログレス表示とキャンセル操作に制御を返す。
     private func loadAllDescendants(of items: [FileItem]) async {
@@ -912,7 +923,7 @@ final class FileListModel: ObservableObject {
 
     var statusSummary: StatusSummary {
         // 表記規約の並び：InDesign → Illustrator → PDF → Photoshop
-        let order: [AppFamily] = [.indesign, .illustrator, .pdf, .photoshop]
+        let order: [AppFamily] = [.indesign, .illustrator, .pdf, .photoshop, .epsOther]
         let per = showVersionColumn ? order.compactMap { fam -> (AppFamily, Int)? in
             let c = visibleFamilyCounts[fam] ?? 0
             return c > 0 ? (fam, c) : nil
@@ -1032,7 +1043,9 @@ final class FileListModel: ObservableObject {
             )
 
             let printInfo = NSPrintInfo()
-            printInfo.orientation = versionOn ? .landscape : .portrait
+            // 折り返し対応により横幅が不要になったため、既定は常に縦向き
+            //（印刷ダイアログで横向きに変更可能）。
+            printInfo.orientation = .portrait
             // 希望マージン：上・左右は 36pt（0.5インチ）。下はページ番号まわりの余白が
             // 大きく見えるため 18pt（0.25インチ）に詰めてレイアウトのバランスを整える。
             // いずれもプリンターの印字可能領域（imageablePageBounds）を絶対にはみ出さない

@@ -28,6 +28,8 @@ struct OutlineTreeActions {
     let expandAllLoaded: () -> Void
     /// すべてのフォルダを閉じる
     let collapseAll: () -> Void
+    /// 変更日・サイズ・バージョン・種類の列幅を内容に合わせる（種類を省略させない）。⌘J
+    let adjustColumnWidths: () -> Void
 }
 
 // MARK: - OutlineList
@@ -44,7 +46,7 @@ struct OutlineList: NSViewRepresentable {
     var folderDoubleClickOpensNewWindow = false
     /// 設定「リストの背景をストライプにする」（既定 false＝横グリッド線。true で交互背景＋グリッド線オフ）。
     var stripeBackground = false
-    /// 設定「拡張子が偽装されていたら種類を赤文字にする」（既定 false）。
+    /// 設定「拡張子の偽装または非Ai/PsのEPSは種類を赤文字にする」（既定 false）。
     /// false＝先頭の警告記号 ⚠ だけ赤・種類名は通常色／true＝種類名も赤。
     var kindMismatchRedText = false
     var onColumnWidthChanged: ((String, CGFloat) -> Void)?
@@ -178,7 +180,8 @@ struct OutlineList: NSViewRepresentable {
         // ツリー操作（すべて展開／すべて閉じる）を登録
         onRegisterTreeActions?(OutlineTreeActions(
             expandAllLoaded: { [weak coord] in coord?.expandAllLoaded() },
-            collapseAll: { [weak coord] in coord?.collapseAllItems() }
+            collapseAll: { [weak coord] in coord?.collapseAllItems() },
+            adjustColumnWidths: { [weak coord] in coord?.adjustColumnWidths() }
         ))
 
         // 列幅の変更を KVO で監視して保存する。
@@ -574,16 +577,18 @@ struct OutlineList: NSViewRepresentable {
 
         private func makeTextCell(ov: NSOutlineView, colID: String, item: FileItem) -> NSView {
             let cellID = NSUserInterfaceItemIdentifier("cell_\(colID)")
-            let cellView: NSTableCellView
+            let cellView: TextCell
             let field: NSTextField
-            if let reused = ov.makeView(withIdentifier: cellID, owner: self) as? NSTableCellView,
+            if let reused = ov.makeView(withIdentifier: cellID, owner: self) as? TextCell,
                let tf = reused.textField {
                 cellView = reused; field = tf
             } else {
-                cellView = NSTableCellView(); cellView.identifier = cellID
+                cellView = TextCell(); cellView.identifier = cellID
                 field = NSTextField(labelWithString: "")
                 field.font = .systemFont(ofSize: 12)
                 field.lineBreakMode = .byTruncatingTail
+                // Finder と同じ「展開ツールチップ」：省略（…）時に文字の上へ全文をオーバーレイ表示する
+                field.allowsExpansionToolTips = true
                 field.translatesAutoresizingMaskIntoConstraints = false
                 field.alignment = parent.columns.first { $0.id == colID }?.alignment ?? .natural
                 cellView.addSubview(field); cellView.textField = field
@@ -627,9 +632,15 @@ struct OutlineList: NSViewRepresentable {
                 attr.addAttribute(.foregroundColor, value: NSColor.kindMismatchWarning,
                                   range: NSRange(location: 0, length: glyphLen))
                 field.attributedStringValue = attr
+                // 警告色を選択状態に追従させる（emphasized＝アクセント選択時は読みやすい白に。⚠ の形で警告は伝わる）。
+                cellView.warning = TextCell.Warning(
+                    full: full, glyphLen: glyphLen, nameColor: nameColor,
+                    font: field.font ?? .systemFont(ofSize: 12))
             } else if item.isDimmed {
+                cellView.warning = nil
                 field.textColor = .tertiaryLabelColor
             } else {
+                cellView.warning = nil
                 let isTargetKind = colID == "kind" && versionMode && item.appFamily != nil
                 field.textColor = isTargetKind ? .labelColor : .secondaryLabelColor
             }
@@ -679,6 +690,58 @@ struct OutlineList: NSViewRepresentable {
         /// すべてのフォルダを閉じる。
         func collapseAllItems() {
             outlineView?.collapseItem(nil, collapseChildren: true)
+        }
+
+        /// 表示メニュー「列幅を調整」（⌘J）。
+        /// 変更日・サイズ・バージョン・種類を「現在表示中の行の最長内容」に合わせ、種類が
+        /// 省略（…）されないようにする。ウィンドウ幅（可視幅）は変えず、増減は名前列で吸収する
+        /// （名前・各列とも最小幅は下回らない＝収まらないぶんは横スクロール）。
+        /// セルの内部パディング（テキスト開始位置・右余白）を加味し、テキスト右端から列右端まで
+        /// 12pt 空くように算出する。
+        func adjustColumnWidths() {
+            guard let ov = outlineView else { return }
+            let font = NSFont.systemFont(ofSize: 12)
+            func textWidth(_ s: String) -> CGFloat {
+                s.isEmpty ? 0 : (s as NSString).size(withAttributes: [.font: font]).width
+            }
+
+            // 現在表示中（展開済み）の行から列ごとの最長テキスト幅を集計
+            var maxText: [String: CGFloat] = ["date": 0, "size": 0, "version": 0, "kind": 0]
+            for r in 0..<ov.numberOfRows {
+                guard let item = ov.item(atRow: r) as? FileItem else { continue }
+                maxText["date"]    = max(maxText["date"]!,    textWidth(item.displayDate))
+                maxText["size"]    = max(maxText["size"]!,    textWidth(item.displaySize))
+                maxText["version"] = max(maxText["version"]!, textWidth(item.displayVersion))
+                maxText["kind"]    = max(maxText["kind"]!,
+                                         textWidth(item.displayKindForList(versionMode: versionMode)))
+            }
+
+            // セルのテキスト開始位置（左インセット）。makeTextCell=7／VersionCell はドット領域ぶん 21。
+            func leftInset(_ id: String) -> CGFloat { id == "version" ? 21 : 7 }
+            // 右余白は希望の12pt。ただし最終列は makeTextCell が trailing 17pt を取るので省略防止に17pt。
+            let lastID = ov.tableColumns.last?.identifier.rawValue
+            func rightPad(_ id: String) -> CGFloat { (id == lastID && id != "version") ? 17 : 12 }
+
+            // 変更日・サイズ・バージョン・種類を内容＋余白に（各列とも最小幅は下回らない）
+            var newWidths: [String: CGFloat] = [:]
+            for tc in ov.tableColumns {
+                let id = tc.identifier.rawValue
+                guard let mt = maxText[id] else { continue }   // 対象は4列のみ
+                newWidths[id] = max(tc.minWidth, leftInset(id) + ceil(mt) + rightPad(id))
+            }
+
+            // 名前列で吸収（可視幅は変えない。名前は最小幅を下回らない＝収まらなければ横スクロール）
+            let visible = ov.enclosingScrollView?.contentView.bounds.width
+                ?? ov.tableColumns.reduce(0) { $0 + $1.width }
+            let othersTotal = newWidths.values.reduce(0, +)
+            if let nameCol = ov.tableColumn(withIdentifier: NSUserInterfaceItemIdentifier("name")) {
+                newWidths["name"] = max(nameCol.minWidth, visible - othersTotal)
+            }
+
+            // 反映（width 変更の KVO で onColumnWidthChanged が呼ばれ、保存もされる）
+            for (id, w) in newWidths {
+                ov.tableColumn(withIdentifier: NSUserInterfaceItemIdentifier(id))?.width = w
+            }
         }
 
         /// 印刷用：現在表示中の行（展開状態を反映）を上から順にスナップショットする。
@@ -816,6 +879,36 @@ struct OutlineList: NSViewRepresentable {
     }
 }
 
+// MARK: - TextCell（種類列の警告色を選択状態に追従させる）
+
+/// date/size/kind 列の汎用テキストセル。拡張子偽装行の警告色（⚠＋名前の赤）は
+/// 属性文字列の foregroundColor のため NSTableCellView の自動色管理が効かない。
+/// backgroundStyle を監視し、選択＋フォーカス時（.emphasized）は読みやすい白に切り替える
+/// （警告の意味は先頭の ⚠ の形で保たれる）。
+private final class TextCell: NSTableCellView {
+    struct Warning { let full: String; let glyphLen: Int; let nameColor: NSColor; let font: NSFont }
+
+    /// 偽装行のときだけ設定（nil = 通常テキスト。通常時は textColor を系の自動管理に任せる）。
+    var warning: Warning? { didSet { applyWarning() } }
+
+    override var backgroundStyle: NSView.BackgroundStyle { didSet { applyWarning() } }
+
+    private func applyWarning() {
+        guard let w = warning, let field = textField else { return }
+        let emphasized = (backgroundStyle == .emphasized)
+        let pstyle = NSMutableParagraphStyle()
+        pstyle.lineBreakMode = .byTruncatingTail
+        let attr = NSMutableAttributedString(string: w.full)
+        let whole = NSRange(location: 0, length: attr.length)
+        let nameColor = emphasized ? NSColor.alternateSelectedControlTextColor : w.nameColor
+        attr.addAttributes([.font: w.font, .paragraphStyle: pstyle, .foregroundColor: nameColor], range: whole)
+        let glyphColor = emphasized ? NSColor.alternateSelectedControlTextColor : NSColor.kindMismatchWarning
+        attr.addAttribute(.foregroundColor, value: glyphColor,
+                          range: NSRange(location: 0, length: min(w.glyphLen, attr.length)))
+        field.attributedStringValue = attr
+    }
+}
+
 // MARK: - NameCell
 
 private class NameCell: NSTableCellView {
@@ -831,6 +924,8 @@ private class NameCell: NSTableCellView {
         label.font = .systemFont(ofSize: 12)
         // Finder のリスト表示に準拠し、名前が収まらないときは末尾ではなく中央付近を省略する。
         label.lineBreakMode = .byTruncatingMiddle
+        // Finder と同じ「展開ツールチップ」：省略（…）時に文字の上へ全文をオーバーレイ表示する
+        label.allowsExpansionToolTips = true
         label.translatesAutoresizingMaskIntoConstraints = false
         addSubview(iconView); addSubview(label)
         imageView = iconView; textField = label
@@ -869,6 +964,8 @@ private class VersionCell: NSTableCellView {
         dot.translatesAutoresizingMaskIntoConstraints = false
         label.font = .systemFont(ofSize: 12)
         label.lineBreakMode = .byTruncatingTail
+        // Finder と同じ「展開ツールチップ」：省略（…）時に文字の上へ全文をオーバーレイ表示する
+        label.allowsExpansionToolTips = true
         label.translatesAutoresizingMaskIntoConstraints = false
         addSubview(dot); addSubview(label)
         textField = label
@@ -897,14 +994,31 @@ private class VersionCell: NSTableCellView {
     /// effectiveAppearance で解決し、外観変更のたびに再解決する。
     private func applyDotColor() {
         guard let family = currentFamily else { return }
+        let emphasized = (backgroundStyle == .emphasized)
         effectiveAppearance.performAsCurrentDrawingAppearance {
-            dot.layer?.backgroundColor = family.markerColor.cgColor
+            // 選択（アクセント背景）時は、中立色（PDF のグレー塗り／generic EPS のグレー輪郭）が
+            // 埋もれるので白にする。ブランド色（Ai/Ps/Id）はそのまま。
+            let isNeutral = (family == .pdf || family == .epsOther)
+            let color = (emphasized && isNeutral) ? NSColor.alternateSelectedControlTextColor : family.markerColor
+            if family == .epsOther {
+                // generic EPS は中空リング（塗りなし・輪郭）で PDF の塗り●と区別する。
+                dot.layer?.backgroundColor = NSColor.clear.cgColor
+                dot.layer?.borderColor = color.cgColor
+                dot.layer?.borderWidth = 1.5
+            } else {
+                dot.layer?.backgroundColor = color.cgColor
+                dot.layer?.borderWidth = 0
+            }
         }
     }
 
     override func viewDidChangeEffectiveAppearance() {
         super.viewDidChangeEffectiveAppearance()
         applyDotColor()
+    }
+
+    override var backgroundStyle: NSView.BackgroundStyle {
+        didSet { applyDotColor() }
     }
 }
 

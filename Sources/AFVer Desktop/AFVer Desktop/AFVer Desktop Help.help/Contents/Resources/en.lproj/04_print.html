@@ -31,7 +31,20 @@
 </ul>
 
 <h3>Page orientation</h3>
-<p>The default is A4 portrait. <strong>When the Version column is shown (the switch is on), the orientation automatically becomes landscape</strong>, because the extra column does not fit well across the page. You can also change the orientation manually in the print dialog.</p>
+<p>The default is portrait. Long names and kinds wrap to fit the column width, so everything fits in portrait even when the Version column is shown. You can also switch to landscape manually in the print dialog.</p>
+
+<h3>Wrapping of long names and kinds</h3>
+<p>When a name or kind does not fit the column width, it wraps automatically so the full text is printed (that row becomes taller). Names are file names, so they may wrap at any position, but the extension (such as <kbd>.indd</kbd>) is never split.</p>
+
+<h3>The "AFVer Desktop" print options</h3>
+<p>The "AFVer Desktop" options in the print dialog let you switch this app's own settings. Your changes are kept for the next print.</p>
+<dl>
+  <dt>Wrap Text</dt>
+  <dd>Turns wrapping of names and kinds on or off. When off, each fits on a single line and anything that does not fit is truncated (on by default).</dd>
+
+  <dt>Date Modified / Size</dt>
+  <dd>Whether to include these columns in the print. Removing them gives the Name column that much more width.</dd>
+</dl>
 
 <div class="note">
   <strong>About the total size</strong>

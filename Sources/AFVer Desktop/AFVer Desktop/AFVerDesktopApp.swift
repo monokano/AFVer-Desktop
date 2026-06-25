@@ -98,6 +98,13 @@ struct FileCommands: Commands {
             .keyboardShortcut(.leftArrow, modifiers: [.command, .option])    // ⌥⌘←
             .disabled(model == nil)
             Divider()
+            // 列幅を調整：変更日・サイズ・バージョン・種類を内容に合わせ、種類を省略させない
+            Button(String(localized: "Adjust Column Widths")) {
+                model?.adjustColumnWidths()
+            }
+            .keyboardShortcut("j", modifiers: .command)   // ⌘J
+            .disabled(model == nil)
+            Divider()
             // バージョンの精度（詳細=xref / 高速=ヘッダのみ）。CD-R 等で取得が遅いとき高速を選ぶ
             Menu(String(localized: "Version Detail")) {
                 Picker(String(localized: "Version Detail"),

@@ -54,7 +54,12 @@
 
 <div class="warning">
   <strong>拡張子の偽装に注意</strong>
-  ファイルの中身と拡張子が一致しない場合（例：中身は EPS なのに拡張子が <kbd>.ai</kbd> など）、種類列の先頭に警告マーク <b style="color:#B22A22">⚠</b> が付きます。拡張子だけ書き換えられたファイルを見分けられます。初期設定ではこの <b style="color:#B22A22">⚠</b> マークと種類名の両方が赤く表示されます。<a href="05_settings.html">設定</a>で「拡張子が偽装されていたら種類を赤文字にする」をオフにすると、<b style="color:#B22A22">⚠</b> マークだけが赤くなり、種類名は通常の色になります。
+  ファイルの中身と拡張子が一致しない場合（例：中身は EPS なのに拡張子が <kbd>.ai</kbd> など）、種類列の先頭に警告マーク <b style="color:#B22A22">⚠</b> が付きます。拡張子だけ書き換えられたファイルを見分けられます。初期設定ではこの <b style="color:#B22A22">⚠</b> マークと種類名の両方が赤く表示されます。<a href="05_settings.html">設定</a>で「拡張子の偽装または非Ai/PsのEPSは種類を赤文字にする」をオフにすると、<b style="color:#B22A22">⚠</b> マークだけが赤くなり、種類名は通常の色になります。
+</div>
+
+<div class="note">
+  <strong>Illustrator・Photoshop 以外の EPS について</strong>
+  中身は EPS でも Illustrator・Photoshop で作られていないもの（例：Ghostscript、CorelDRAW、Inkscape など）は、種類列に「EPS 形式 - 〔生成元〕 (.eps)」と生成元を表示します。素性が確認できないため、拡張子が <kbd>.eps</kbd> でも常に赤で警告します。生成元が読み取れないときは「生成元不明」と表示します。
 </div>
 
 <div class="note">
@@ -68,6 +73,7 @@
   <li><b style="color:#FF3366">●</b> ピンク色：InDesign</li>
   <li><b style="color:#FF9A00">●</b> 橙色：Illustrator</li>
   <li><b style="color:#8E8E93">●</b> グレー：PDF（編集機能の有無にかかわらず）</li>
+  <li><b style="color:#8E8E93">○</b> グレーの輪郭（中空リング）：Illustrator・Photoshop 以外の EPS（PDF の塗りつぶし ● と区別）</li>
   <li><b style="color:#31A8FF">●</b> 青色：Photoshop</li>
 </ul>
 <p>この色ドットは、プリントや PDF にも同じように印刷されます。</p>
