@@ -49,6 +49,9 @@ struct OutlineList: NSViewRepresentable {
     /// 設定「拡張子の偽装または非Ai/PsのEPSは種類を赤文字にする」（既定 false）。
     /// false＝先頭の警告記号 ⚠ だけ赤・種類名は通常色／true＝種類名も赤。
     var kindMismatchRedText = false
+    /// 設定「列幅を自動的に調整」（既定 true）。true の間はリストの内容が変わるたび
+    /// （読み込み・展開/折りたたみ・バージョン取得の進行）に列幅を自動調整する。
+    var autoAdjustColumns = true
     var onColumnWidthChanged: ((String, CGFloat) -> Void)?
     /// ヘッダのドラッグで列順が変わったとき、名前列を除いた「表示中の列ID順」を通知する。
     var onColumnOrderChanged: (([String]) -> Void)?
@@ -241,7 +244,7 @@ struct OutlineList: NSViewRepresentable {
     }
 
     /// 列構成（`columns`）に合わせてテーブルの列を増減・並べ替えする。
-    /// バージョン列の出入りに合わせてウィンドウ幅も増減し、名前列が詰まらないようにする。
+    /// バージョン列の出入りではウインドウ幅は変えず、列幅の自動調整（設定に関わらず）で名前列に吸収させる。
     private func reconcileColumns(ov: NSOutlineView, coord: Coordinator) {
         let desiredIDs = columns.map(\.id)
         let currentIDs = ov.tableColumns.map { $0.identifier.rawValue }
@@ -252,18 +255,8 @@ struct OutlineList: NSViewRepresentable {
         coord.isAdjustingColumns = true
         defer { coord.isAdjustingColumns = false }
 
-        // バージョン列の追加/削除に伴うウィンドウ幅の増減量を先に決める
-        let hadVersion = currentIDs.contains("version")
-        let wantVersion = desiredIDs.contains("version")
-        var widthDelta: CGFloat = 0
-        if wantVersion && !hadVersion {
-            // 追加：これから付くバージョン列の幅ぶんウィンドウを広げる
-            widthDelta = columnWidths["version"]
-                ?? (columns.first { $0.id == "version" }?.width ?? 140)
-        } else if !wantVersion && hadVersion {
-            // 削除：今ある列の実幅ぶんウィンドウを狭める
-            widthDelta = -(ov.tableColumns.first { $0.identifier.rawValue == "version" }?.width ?? 140)
-        }
+        // バージョン列の出入り（＝スイッチ切替）か。列順だけの変更とは区別する。
+        let versionToggled = currentIDs.contains("version") != desiredIDs.contains("version")
 
         // 不要な列を削除
         for tc in ov.tableColumns where !desiredIDs.contains(tc.identifier.rawValue) {
@@ -289,15 +282,14 @@ struct OutlineList: NSViewRepresentable {
         // 列の増減に合わせて KVO 監視を貼り直す（新しい列も保存対象にする）
         coord.observeColumnWidths(of: ov)
 
-        // ウィンドウ幅を増減（名前列は firstColumnOnly 自動調整で元幅を保つ）
-        if widthDelta != 0, let window = ov.window {
-            var frame = window.frame
-            frame.size.width += widthDelta
-            window.setFrame(frame, display: true, animate: false)
-        }
-
         // 種類列の上書き有無（versionMode）が切り替わるので再描画して反映する
         ov.reloadData()
+
+        // バージョン列の出入りでは、ウインドウ幅を変えずに列幅を自動調整する（設定 OFF でも実行）。
+        // 増減ぶんは adjustColumnWidths が名前列で吸収する。
+        if versionToggled {
+            coord.scheduleAutoAdjust(force: true)
+        }
     }
 
     func updateNSView(_ sv: NSScrollView, context: Context) {
@@ -328,6 +320,13 @@ struct OutlineList: NSViewRepresentable {
             ov.reloadData()
         }
 
+        // 設定「列幅を自動的に調整」が OFF→ON になったら、その場で一度調整する。
+        if coord.lastAutoAdjust != autoAdjustColumns {
+            let turnedOn = coord.lastAutoAdjust == false && autoAdjustColumns
+            coord.lastAutoAdjust = autoAdjustColumns
+            if turnedOn { coord.scheduleAutoAdjust() }
+        }
+
         // バージョン取得が進んだら再描画（展開状態は保持される）。
         // 「種類」列ソート中はバージョン確定で並びが変わりうるので並べ替えてから再描画。
         if coord.lastVersionToken != versionRefreshToken {
@@ -336,6 +335,8 @@ struct OutlineList: NSViewRepresentable {
                 coord.applySortToAll(items: &coord.displayItems)
             }
             ov.reloadData()
+            // バージョン・種類の文字列が確定して幅が変わりうる
+            coord.scheduleAutoAdjust()
         }
 
         // 保存された列幅を初回のみ適用
@@ -365,6 +366,8 @@ struct OutlineList: NSViewRepresentable {
             coord.applySortToAll(items: &coord.displayItems)
             syncSortIndicator(ov: ov, sort: sortState)
             ov.reloadData()
+            // 新しいフォルダ／ファイル群を読み込んだ
+            coord.scheduleAutoAdjust()
         }
     }
 
@@ -396,6 +399,10 @@ struct OutlineList: NSViewRepresentable {
         var widthObservers: [NSKeyValueObservation] = []
         /// reconcileColumns によるプログラム的な列移動中は true。ユーザー操作と区別し保存を抑止する。
         var isAdjustingColumns = false
+        /// 最後に見た「列幅を自動的に調整」設定（OFF→ON の切替検知用）
+        var lastAutoAdjust: Bool?
+        /// 列幅の自動調整が次ランループに予約済みか（同じランループ内の複数要求を1回にまとめる）
+        private var autoAdjustPending = false
 
         init(parent: OutlineList) {
             self.parent = parent
@@ -518,15 +525,36 @@ struct OutlineList: NSViewRepresentable {
                 }
                 // 遅延読み込みで子行が挿入された後の可視行数を反映する。
                 self.pushVisibleSummary()
+                // 子行が入ったので列幅を合わせ直す（DidExpand の時点では子が0件のため）
+                self.scheduleAutoAdjust()
             }
         }
 
         func outlineViewItemDidExpand(_ notification: Notification) {
             pushVisibleSummary()
+            scheduleAutoAdjust()
         }
 
         func outlineViewItemDidCollapse(_ notification: Notification) {
             pushVisibleSummary()
+            scheduleAutoAdjust()
+        }
+
+        // MARK: 列幅の自動調整
+
+        /// 列幅の自動調整を次ランループで1回だけ実行する（展開・読み込み・バージョン更新が
+        /// 続けて来ても1回にまとめる。行の挿入やレイアウトが済んだ後に測るためにも遅らせる）。
+        /// `force` が false のときは設定「列幅を自動的に調整」が ON の場合だけ実行する。
+        /// `force` が true（バージョン列の表示切替）なら設定に関わらず実行する。
+        func scheduleAutoAdjust(force: Bool = false) {
+            guard force || parent.autoAdjustColumns else { return }
+            guard !autoAdjustPending else { return }
+            autoAdjustPending = true
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                self.autoAdjustPending = false
+                self.adjustColumnWidths()
+            }
         }
 
         // MARK: 可視行の集計（ステータスバー用）

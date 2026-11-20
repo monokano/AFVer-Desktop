@@ -18,8 +18,10 @@
 	<string>hbwr</string>
 	<key>HPDBookAccessPath</key>
 	<string>index.html</string>
+	<key>HPDBookIndexPath</key>
+	<string>search.helpindex</string>
 	<key>HPDBookTitle</key>
-	<string>AFVer Desktop Help</string>
+	<string>AFVer Desktop ヘルプ</string>
 	<key>HPDBookType</key>
 	<string>3</string>
 	<key>HPDBookUsesExternalViewer</key>

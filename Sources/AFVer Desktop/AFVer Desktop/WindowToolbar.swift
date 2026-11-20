@@ -25,6 +25,8 @@ struct ToolbarConfigurator: NSViewRepresentable {
     let versionDetail: VersionDetail
     /// 精度切替時のコールバック
     let onSetVersionDetail: (VersionDetail) -> Void
+    /// ［列幅を調整］ボタンを表示するか（設定「列幅を自動的に調整」が OFF のときだけ true）
+    var showAdjustButton = true
     /// ツールバーボタン：すべて展開／すべて閉じる／列幅を調整／プリント
     var onExpandAll: (() -> Void)?
     var onCollapseAll: (() -> Void)?
@@ -48,6 +50,7 @@ struct ToolbarConfigurator: NSViewRepresentable {
         context.coordinator.onCollapseAll = onCollapseAll
         context.coordinator.onAdjustColumns = onAdjustColumns
         context.coordinator.onPrint = onPrint
+        context.coordinator.setAdjustButtonVisible(showAdjustButton)
         context.coordinator.update(folderURL: folderURL, hasContent: hasContent,
                                    isFlatList: isFlatList,
                                    versionOn: versionOn, versionDetail: versionDetail)
@@ -82,7 +85,9 @@ final class ToolbarCoordinator: NSObject, NSToolbarDelegate, NSToolbarItemValida
 
     private weak var window: NSWindow?
     private let titleView = FolderTitleView()
-    private let versionSwitch = NSSwitch()
+    private let versionSwitch = FixedSizeSwitch()
+    /// スイッチを包むコンテナ（上下中央に置くため）
+    private let switchContainer = NSView()
     /// バージョン精度のセグメンテッドコントロール（詳細 / 簡易の択一）
     private let detailSegmented = NSSegmentedControl()
     /// 現在の精度（項目生成時の選択セグメント決定に使う）
@@ -91,6 +96,8 @@ final class ToolbarCoordinator: NSObject, NSToolbarDelegate, NSToolbarItemValida
     private var pendingIsFlatList = false
     /// リスト表示中のみツールバーボタンを有効にする（validateToolbarItem で参照）
     private var hasContent = false
+    /// ［列幅を調整］ボタンの表示状態（項目生成時にも反映する）
+    private var adjustButtonVisible = true
     /// macOS 13/14 用：表示モードを `.iconOnly` に固定するための KVO（macOS 15+ は API で禁止）
     private var displayModeObservation: NSKeyValueObservation?
 
@@ -110,6 +117,26 @@ final class ToolbarCoordinator: NSObject, NSToolbarDelegate, NSToolbarItemValida
         versionSwitch.action = #selector(versionSwitchChanged(_:))
         // ラベルなしスイッチのため、ツールチップで機能（Adobe書類限定）を示す
         versionSwitch.toolTip = String(localized: "Adobe Document Creation Version")
+        // macOS 26 以降のツールバーは項目挿入時に中のコントロールを .extraLarge に書き換えるため、
+        // FixedSizeSwitch で .small に固定する（macOS 15 以前は従来の通常サイズのまま）。
+        // macOS 26 はウインドウの角丸の径が大きく、右端のスイッチが窮屈に見えるため右に余白を取る。
+        var switchTrailingInset: CGFloat = 0
+        if #available(macOS 26.0, *) {
+            versionSwitch.fixedControlSize = .small
+            versionSwitch.controlSize = .small
+            switchTrailingInset = 8
+        }
+        versionSwitch.translatesAutoresizingMaskIntoConstraints = false
+        switchContainer.translatesAutoresizingMaskIntoConstraints = false
+        switchContainer.addSubview(versionSwitch)
+        NSLayoutConstraint.activate([
+            versionSwitch.leadingAnchor.constraint(equalTo: switchContainer.leadingAnchor),
+            versionSwitch.trailingAnchor.constraint(equalTo: switchContainer.trailingAnchor,
+                                                    constant: -switchTrailingInset),
+            versionSwitch.centerYAnchor.constraint(equalTo: switchContainer.centerYAnchor),
+            switchContainer.heightAnchor.constraint(
+                greaterThanOrEqualTo: versionSwitch.heightAnchor),
+        ])
 
         // バージョン精度：詳細 / 簡易 を択一するセグメンテッドコントロール
         detailSegmented.segmentCount = 2
@@ -152,6 +179,8 @@ final class ToolbarCoordinator: NSObject, NSToolbarDelegate, NSToolbarItemValida
         }
 
         window.toolbar = toolbar
+        // 取り付け前に届いていた［列幅を調整］ボタンの表示状態を反映（macOS 13/14 は項目の除去で隠す）
+        setAdjustButtonVisible(adjustButtonVisible)
         window.toolbarStyle = .unified
         window.titleVisibility = .hidden
 
@@ -184,6 +213,24 @@ final class ToolbarCoordinator: NSObject, NSToolbarDelegate, NSToolbarItemValida
             window?.title = String(localized: "File List")
         } else {
             window?.title = ""
+        }
+    }
+
+    /// ［列幅を調整］ボタンの表示/非表示（設定「列幅を自動的に調整」が ON の間は隠す）。
+    /// macOS 15+ は `isHidden`、macOS 13/14 は項目そのものを取り除く／差し込む。
+    func setAdjustButtonVisible(_ visible: Bool) {
+        adjustButtonVisible = visible
+        guard let toolbar = window?.toolbar else { return }   // 未取り付け：項目生成時に反映
+        if #available(macOS 15.0, *) {
+            toolbar.items.first { $0.itemIdentifier == Self.adjustItemID }?.isHidden = !visible
+        } else {
+            let index = toolbar.items.firstIndex { $0.itemIdentifier == Self.adjustItemID }
+            if visible, index == nil,
+               let after = toolbar.items.firstIndex(where: { $0.itemIdentifier == Self.collapseItemID }) {
+                toolbar.insertItem(withItemIdentifier: Self.adjustItemID, at: after + 1)
+            } else if !visible, let index {
+                toolbar.removeItem(at: index)
+            }
         }
     }
 
@@ -232,7 +279,7 @@ final class ToolbarCoordinator: NSObject, NSToolbarDelegate, NSToolbarItemValida
             return item
         case Self.switchItemID:
             let item = NSToolbarItem(itemIdentifier: itemIdentifier)
-            item.view = versionSwitch
+            item.view = switchContainer
             item.label = ""            // ラベルなし（仕様）
             item.visibilityPriority = .high
             return item
@@ -254,9 +301,11 @@ final class ToolbarCoordinator: NSObject, NSToolbarDelegate, NSToolbarItemValida
                                   title: String(localized: "Collapse All"),
                                   action: #selector(collapseAllClicked(_:)))
         case Self.adjustItemID:
-            return makeButtonItem(id: itemIdentifier, symbol: "arrow.left.and.right",
-                                  title: String(localized: "Adjust Column Widths"),
-                                  action: #selector(adjustColumnsClicked(_:)))
+            let item = makeButtonItem(id: itemIdentifier, symbol: "arrow.left.and.right",
+                                      title: String(localized: "Adjust Column Widths"),
+                                      action: #selector(adjustColumnsClicked(_:)))
+            if #available(macOS 15.0, *) { item.isHidden = !adjustButtonVisible }
+            return item
         case Self.printItemID:
             return makeButtonItem(id: itemIdentifier, symbol: "printer",
                                   title: String(localized: "Print…"),
@@ -291,6 +340,20 @@ final class ToolbarCoordinator: NSObject, NSToolbarDelegate, NSToolbarItemValida
         [Self.titleItemID, .flexibleSpace,
          Self.expandItemID, Self.collapseItemID, Self.adjustItemID, Self.printItemID,
          .space, Self.detailItemID, Self.switchItemID]
+    }
+}
+
+// MARK: - FixedSizeSwitch
+
+/// コントロールサイズを固定できる NSSwitch。
+/// macOS 26 のツールバーは項目挿入時に中のコントロールを .extraLarge へ書き換えるため、
+/// fixedControlSize を設定するとその上書きを無視する。
+final class FixedSizeSwitch: NSSwitch {
+    var fixedControlSize: NSControl.ControlSize?
+
+    override var controlSize: NSControl.ControlSize {
+        get { super.controlSize }
+        set { super.controlSize = fixedControlSize ?? newValue }
     }
 }
 

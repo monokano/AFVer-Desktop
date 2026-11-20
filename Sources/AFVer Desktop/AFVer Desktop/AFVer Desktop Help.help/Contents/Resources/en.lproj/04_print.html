@@ -20,30 +20,34 @@
 
 <div class="note">
   <strong>Note</strong>
-  What gets printed is "the state currently expanded on screen." The contents of collapsed folders are not printed. To show every level, use Expand All first.
+  What gets printed is "the state currently expanded in the window." The contents of collapsed folders are not printed. To show every level, use Expand All first.
 </div>
 
 <h3>What is printed</h3>
 <ul>
   <li><strong>Header</strong>: the icon, name, and total size of the open folder (or volume). The print date and time appears at the far right.</li>
-  <li><strong>List</strong>: the same columns as on screen. Folders show a mark indicating their expanded state (∨ / &gt;). Icons are printed as well. When the Version column is shown, the <a href="03_version.html">color dots at the start of each row</a> are printed too.</li>
+  <li><strong>List</strong>: the same columns as in the window. Folders show a mark indicating their expanded state (∨ / &gt;). Icons are printed as well. When the Version column is shown, the <a href="03_version.html#dots">color dots at the start of each row</a> are printed too.</li>
   <li><strong>Footer</strong>: the page number.</li>
 </ul>
 
-<h3>Page orientation</h3>
-<p>The default is portrait. Long names and kinds wrap to fit the column width, so everything fits in portrait even when the Version column is shown. You can also switch to landscape manually in the print dialog.</p>
+<h3>Column widths</h3>
+<p>When printing, column widths are always set automatically. The "Date Modified," "Size," "Version," and "Kind" columns are sized to just fit the printed contents, and all the remaining width goes to the "Name" column. The column widths in the window and the "Adjust column widths automatically" setting do not affect this.</p>
+
+<h3 id="orientation">Page orientation</h3>
+<p>The default is portrait. When names or kinds are long and overlap the text in the column to their right, first switch the paper to landscape in the print dialog. If they still overlap in landscape, turn on "Wrap Text" in the print options.</p>
 
 <h3>Wrapping of long names and kinds</h3>
-<p>When a name or kind does not fit the column width, it wraps automatically so the full text is printed (that row becomes taller). Names are file names, so they may wrap at any position, but the extension (such as <kbd>.indd</kbd>) is never split.</p>
+<p>By default, names and kinds are printed on a single line. When a kind does not fit the column width, its end is truncated with "…". In portrait with the Version column shown, the trailing "(.pdf)" of PDF kind names is omitted to save space. A name longer than its column may overlap the text in the column to its right (see <a href="#orientation">Page orientation</a>).</p>
+<p>Turn on "Wrap Text" in the print options to wrap names and kinds that do not fit the column width, so the full text is printed (that row becomes taller). Names are file names, so they may wrap at any position, but the extension (such as <kbd>.indd</kbd>) is never split.</p>
 
 <h3>The "AFVer Desktop" print options</h3>
 <p>The "AFVer Desktop" options in the print dialog let you switch this app's own settings. Your changes are kept for the next print.</p>
 <dl>
-  <dt>Wrap Text</dt>
-  <dd>Turns wrapping of names and kinds on or off. When off, each fits on a single line and anything that does not fit is truncated (on by default).</dd>
-
   <dt>Date Modified / Size</dt>
   <dd>Whether to include these columns in the print. Removing them gives the Name column that much more width.</dd>
+
+  <dt>Wrap Text</dt>
+  <dd>Turns wrapping of names and kinds on or off. When on, text that does not fit the column width wraps so the full text is printed. When off, each is printed on a single line (off by default).</dd>
 </dl>
 
 <div class="note">
@@ -58,7 +62,7 @@
   <li>Choose "Export as CSV…" (<kbd>⌘E</kbd>) from the "File" menu.</li>
   <li>Choose a destination and save.</li>
 </ol>
-<p>As with printing, what gets exported is "the state currently expanded on screen." The Name column uses indentation so that the hierarchy is clear.</p>
+<p>As with printing, what gets exported is "the state currently expanded in the window." The Name column uses indentation so that the hierarchy is clear.</p>
 
 <div class="note">
   <strong>Tip</strong>

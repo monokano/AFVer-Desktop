@@ -40,6 +40,7 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+    text-autospace: normal;  /* 和欧間を自動で空ける（HTML には欧文スペースを入れない） */
     font-size: 14px;
     line-height: 1.7;
     color: var(--text);
@@ -115,6 +116,11 @@ a:hover {
     color: var(--text);
     opacity: 0.6;
     margin-top: 1px;
+}
+
+/* 下位ページ（親ページの直後に字下げして並べる） */
+.toc li.sub a {
+    padding-left: 24px;
 }
 
 /* ── Note / Warning boxes ── */

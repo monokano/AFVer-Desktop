@@ -41,9 +41,7 @@ struct AFVerDesktopApp: App {
                     appDelegate.openHelp()
                 }
                 .keyboardShortcut("?", modifiers: .command)
-                Button(String(localized: "Change Log")) {
-                    appDelegate.openChangeLog()
-                }
+                // 更新履歴ウインドウは廃止（ヘルプ目次の最後の「リリース」＝GitHub Releases に置き換え。共通ヘルプ仕様）
             }
             // 「新規ウインドウ」(⌘N) は WindowGroup 標準の .newItem に任せる
             // （空で replace すると File メニューごと消え、新規ウインドウも作れなくなる）
@@ -169,7 +167,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var lastWindowSize: NSSize?
     private var previousMain: NSWindow?
     private var helpWindowController: HelpWindowController?
-    private var changeLogWindowController: ChangeLogWindowController?
     private var settingsWindowController: SettingsWindowController?
 
     // MARK: 設定（独自ウインドウに設定 UI を表示）
@@ -184,20 +181,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     // MARK: ヘルプ（独自ウインドウに HTML ヘルプを表示）
 
-    func openHelp() {
+    /// ヘルプメニュー「AFVer Desktop ヘルプ」(⌘?)・Dock メニュー「ヘルプ」の両方から呼ばれる。
+    /// ウインドウのタイトルは常に「AFVer Desktop ヘルプ」（HelpWindowController 側で固定）。
+    @objc func openHelp() {
         if helpWindowController == nil {
             helpWindowController = HelpWindowController()
         }
         helpWindowController?.show()
-    }
-
-    // MARK: 更新履歴（独自ウインドウにリモートHTMLを表示）
-
-    @objc func openChangeLog() {
-        if changeLogWindowController == nil {
-            changeLogWindowController = ChangeLogWindowController()
-        }
-        changeLogWindowController?.show()
     }
 
     // MARK: Dock メニュー
@@ -211,13 +201,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         )
         settingsItem.target = self
         menu.addItem(settingsItem)
-        let changeLogItem = NSMenuItem(
-            title: String(localized: "Change Log"),
-            action: #selector(openChangeLog),
+        let helpItem = NSMenuItem(
+            title: String(localized: "Help"),
+            action: #selector(openHelp),
             keyEquivalent: ""
         )
-        changeLogItem.target = self
-        menu.addItem(changeLogItem)
+        helpItem.target = self
+        menu.addItem(helpItem)
         return menu
     }
 

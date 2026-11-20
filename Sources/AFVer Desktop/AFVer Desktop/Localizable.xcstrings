@@ -31,6 +31,17 @@
         }
       }
     },
+    "Adjust column widths automatically" : {
+      "comment" : "Settings window: toggle to auto-fit list column widths",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "列幅を自動的に調整"
+          }
+        }
+      }
+    },
     "Adobe Document Creation Version" : {
       "localizations" : {
         "ja" : {
@@ -81,8 +92,27 @@
         }
       }
     },
+    "Applies to PSD/PSB and PDF with Photoshop editing capabilities." : {
+      "comment" : "Settings window: caption under the Photoshop version toggle",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PSD/PSBと編集機能保持PDFが対象です。"
+          }
+        }
+      }
+    },
     "Back" : {
-
+      "comment" : "Help window toolbar: go back (accessibility)",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "戻る"
+          }
+        }
+      }
     },
     "Cancel" : {
       "localizations" : {
@@ -90,16 +120,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "キャンセル"
-          }
-        }
-      }
-    },
-    "Change Log" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "更新履歴"
           }
         }
       }
@@ -275,10 +295,15 @@
       }
     },
     "Forward" : {
-
-    },
-    "GitHub Releases" : {
-
+      "comment" : "Help window toolbar: go forward (accessibility)",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "進む"
+          }
+        }
+      }
     },
     "Hello, world!" : {
       "extractionState" : "stale",
@@ -287,6 +312,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "こんにちは、世界！"
+          }
+        }
+      }
+    },
+    "Help" : {
+      "comment" : "Dock menu: open the help window",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ヘルプ"
           }
         }
       }
@@ -397,6 +433,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ビッグドキュメント形式 (.psb)"
+          }
+        }
+      }
+    },
+    "List" : {
+      "comment" : "Settings window: section header for list options",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リスト"
           }
         }
       }
@@ -634,6 +681,17 @@
         }
       }
     },
+    "The ⚠ symbol stays red even when off." : {
+      "comment" : "Settings window: caption under the red kind toggle",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オフにしても⚠記号は赤色のままです。"
+          }
+        }
+      }
+    },
     "Unknown" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -671,6 +729,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "バージョンの精度"
+          }
+        }
+      }
+    },
+    "When off, use the Adjust Column Widths button in the toolbar." : {
+      "comment" : "Settings window: caption under the auto-adjust column widths toggle",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オフのときはツールバーの［列幅を調整］ボタンで調整します。"
           }
         }
       }

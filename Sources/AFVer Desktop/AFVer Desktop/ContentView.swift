@@ -67,6 +67,7 @@ struct ContentView: View {
             onToggleVersion: { model.setShowVersion($0) },
             versionDetail: model.versionDetail,
             onSetVersionDetail: { model.setVersionDetail($0) },
+            showAdjustButton: !settings.autoAdjustColumnWidths,
             onExpandAll: { model.expandAll() },
             onCollapseAll: { model.collapseAll() },
             onAdjustColumns: { model.adjustColumnWidths() },
@@ -182,6 +183,7 @@ struct ContentView: View {
             folderDoubleClickOpensNewWindow: settings.folderDoubleClickAction == .newWindow,
             stripeBackground: settings.listBackgroundStripe,
             kindMismatchRedText: settings.kindMismatchRedText,
+            autoAdjustColumns: settings.autoAdjustColumnWidths,
             onColumnWidthChanged: { id, w in
                 // 列幅 KVO は reconcileColumns（updateNSView 内）の setFrame/tc.width 変更で
                 // 同期発火しうる。columnWidths セッターは @AppStorage 書き込み＝objectWillChange
@@ -361,9 +363,11 @@ final class FileListModel: ObservableObject {
     @Published var loadProgress: Double? = nil
     @Published var isCancellable = false
     @Published var isDropTargeted = false
-    /// スイッチON で「バージョン」列を表示する（状態は終了時に保存し次回起動時に復元）
+    /// スイッチON で「バージョン」列を表示する（状態は終了時に保存し次回起動時に復元）。
+    /// 既定は ON（OFF だとスイッチが薄いグレーで存在に気づきにくいため）。未設定のときだけ true。
     private static let showVersionKey = "showVersionColumn"
-    @Published var showVersionColumn = UserDefaults.standard.bool(forKey: showVersionKey)
+    @Published var showVersionColumn =
+        UserDefaults.standard.object(forKey: showVersionKey) as? Bool ?? true
     /// バージョン取得の精度（詳細=xref / 高速=ヘッダのみ）。終了時に保存し次回起動時に復元
     private static let versionDetailKey = "versionDetail"
     @Published var versionDetail: VersionDetail =

@@ -55,7 +55,7 @@
 
 <div class="note">
   <strong>Tip</strong>
-  Printing and CSV export target "the state currently expanded on screen." Use Expand All before printing to list every level.
+  Printing and CSV export target "the state currently expanded in the window." Use Expand All before printing to list every level.
 </div>
 
 <h3>Column operations</h3>
@@ -65,12 +65,14 @@
   <li>Drag the border between columns to change a column's width.</li>
 </ul>
 
-<h3>Adjust the column widths</h3>
-<p>Resize the "Date Modified," "Size," "Version," and "Kind" columns at once to fit their current contents. In particular, "Kind" is no longer truncated with "…". The difference is absorbed by the "Name" column, so the window size does not change (if everything cannot fit, the list scrolls horizontally).</p>
+<h3 id="column-widths">Column widths</h3>
+<p>The "Date Modified," "Size," "Version," and "Kind" columns are resized to just fit their current contents. In particular, "Kind" is no longer truncated with "…". The remaining width goes to the "Name" column, so the window size does not change (if everything cannot fit, the list scrolls horizontally).</p>
+<p>By default, "Adjust column widths automatically" is on in <a href="05_settings.html#auto-adjust">Settings</a>, and the widths are adjusted automatically whenever the list changes.</p>
 <ul>
-  <li>Run it from "Adjust Column Widths" (<kbd>⌘J</kbd>) in the "View" menu, or with the toolbar button (left of Print).</li>
-  <li>It measures the rows currently displayed, so after changing what is expanded or collapsed, run it again to remeasure for that state.</li>
+  <li>They are adjusted when you open a folder, expand or collapse folders, and as versions are read.</li>
+  <li>When you show or hide the Version column with the toolbar switch, the widths are adjusted whether this setting is on or off.</li>
 </ul>
+<p>When "Adjust column widths automatically" is off, columns keep the widths you set by hand. To fit them to their contents, choose "Adjust Column Widths" (<kbd>⌘J</kbd>) in the "View" menu, or click the "Adjust Column Widths" button in the toolbar (shown only when the setting is off).</p>
 
 <div class="note">
   <strong>Tip</strong>
@@ -114,14 +116,17 @@
   <dt>Folder name (far left)</dt>
   <dd>The icon and name of the open folder. Click the <strong>⌄</strong> on its right to open a hierarchy menu from the parent folders through the volume to the computer, and reveal each level in Finder. When a "File List" is shown, there is no common parent, so it simply reads "File List."</dd>
 
-  <dt>Expand, Collapse, Adjust Column Widths, and Print buttons</dt>
-  <dd>Run "Expand All," "Collapse All," "Adjust Column Widths," and "Print" with a single click. "Adjust Column Widths" fits each column to its contents.</dd>
+  <dt>Expand All, Collapse All, and Print buttons</dt>
+  <dd>Run "Expand All," "Collapse All," and "Print" with a single click.</dd>
+
+  <dt>Adjust Column Widths button</dt>
+  <dd>Fits each column to its contents. Shown only when "Adjust column widths automatically" is off in <a href="05_settings.html#auto-adjust">Settings</a> (when it is on, widths are adjusted automatically, so the button is not needed).</dd>
 
   <dt>Version Detail (left of the switch)</dt>
-  <dd>Switches how precisely the version is shown, between "Detailed" and "Simple." See <a href="03_version.html">Version Detail (Detailed / Simple)</a>.</dd>
+  <dd>Switches how precisely the version is shown, between "Detailed" and "Simple." See <a href="03_version.html#detail">Version Detail (Detailed / Simple)</a>.</dd>
 
   <dt>Switch (far right)</dt>
-  <dd>Turn it on to show the <a href="03_version.html">Adobe document creation version</a>.</dd>
+  <dd>Turn it on to show the <a href="03_version.html">Adobe document creation version</a>. It is on by default.</dd>
 </dl>
 
 <h2>Status bar</h2>
@@ -131,7 +136,7 @@
   <dd>Shows the number of items currently displayed in the window, along with the number selected (for example, <kbd>3 of 123 selected</kbd>).</dd>
 
   <dt>Per-app totals (color dots)</dt>
-  <dd>When the Version column is shown, it lists the number of target files for each app, using the same colors as the <a href="03_version.html">color dots at the start of each row</a> (for example, <b style="color:#FF3366">●</b>8 <b style="color:#FF9A00">●</b>10 <b style="color:#8E8E93">●</b>5 <b style="color:#31A8FF">●</b>8). This total also reflects only what is currently displayed in the window.</dd>
+  <dd>When the Version column is shown, it lists the number of target files for each app, using the same colors as the <a href="03_version.html#dots">color dots at the start of each row</a> (for example, <b style="color:#FF3366">●</b>8 <b style="color:#FF9A00">●</b>10 <b style="color:#8E8E93">●</b>5 <b style="color:#31A8FF">●</b>8). This total also reflects only what is currently displayed in the window.</dd>
 </dl>
 </body>
 </html>

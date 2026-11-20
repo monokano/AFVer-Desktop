@@ -11,7 +11,7 @@
 <h1>Adobe Document Creation Version</h1>
 
 <h2>About this feature</h2>
-<p>Adobe InDesign and Illustrator documents record the version of the app that created them inside the file. When you turn on the switch at the far right of the toolbar, AFVer Desktop reads this creation version from supported files and displays it.</p>
+<p>Adobe InDesign and Illustrator documents record the version of the app that created them inside the file. When the switch at the far right of the toolbar is on, AFVer Desktop reads this creation version from supported files and displays it.</p>
 <p>Because you can see at a glance which version each file was made with, this is useful when you want to know the version before opening a file.</p>
 
 <div class="note">
@@ -20,6 +20,7 @@
 </div>
 
 <h2>How to turn it on</h2>
+<p>Use the switch at the far right of the toolbar to show or hide the Version column. It is on by default.</p>
 <ol class="steps">
   <li>Turn on the switch at the far right of the toolbar.</li>
   <li>A "Version" column is added between "Size" and "Kind."</li>
@@ -29,7 +30,7 @@
 
 <div class="note">
   <strong>Note</strong>
-  The window widens automatically to make room for the Version column. Turn the switch off and the column disappears and the window width returns to normal.
+  Turning the switch on or off does not change the window size. The column widths are <a href="02_howto.html#column-widths">adjusted automatically</a> to make room for the Version column (even when "Adjust column widths automatically" is off in Settings).
 </div>
 
 <h2>Supported files</h2>
@@ -49,12 +50,12 @@
   <dd>Shows the creation version (for example, <kbd>CC 2017 (12.1.0)</kbd> or <kbd>2026 (30.3)</kbd>). Blank if it cannot be read.</dd>
 
   <dt>Kind column</dt>
-  <dd>Instead of the macOS kind name, it changes to a more detailed, dedicated kind name (for example, <kbd>InDesign Document (.indd)</kbd> or <kbd>Adobe Illustrator format (.ai)</kbd>).</dd>
+  <dd>Instead of the macOS kind name, it changes to a more detailed, dedicated kind name (for example, <kbd>InDesign Document (.indd)</kbd> or <kbd>Illustrator format (.ai)</kbd>).</dd>
 </dl>
 
 <div class="warning">
   <strong>Watch for extension spoofing</strong>
-  If a file's contents do not match its extension (for example, the contents are EPS but the extension is <kbd>.ai</kbd>), a warning mark <b style="color:#B22A22">⚠</b> appears at the start of the Kind column. This helps you spot files whose extension alone has been changed. By default both this <b style="color:#B22A22">⚠</b> mark and the kind name are shown in red. Turn off "Show kind in red for disguised extensions" in <a href="05_settings.html">Settings</a> to make only the <b style="color:#B22A22">⚠</b> mark red, while the kind name keeps its normal color.
+  If a file's contents do not match its extension (for example, the contents are EPS but the extension is <kbd>.ai</kbd>), a warning mark <b style="color:#B22A22">⚠</b> appears at the start of the Kind column. This helps you spot files whose extension alone has been changed. By default both this <b style="color:#B22A22">⚠</b> mark and the kind name are shown in red. Turn off "Show kind in red for disguised extensions" in <a href="05_settings.html#red-kind">Settings</a> to make only the <b style="color:#B22A22">⚠</b> mark red, while the kind name keeps its normal color.
 </div>
 
 <div class="note">
@@ -64,10 +65,10 @@
 
 <div class="note">
   <strong>About the Photoshop version</strong>
-  Photoshop <kbd>.psd</kbd> / <kbd>.psb</kbd> and editing-capable <kbd>.pdf</kbd> files <b>also show the version by default</b>. However, reading it takes time, so if the wait bothers you on slow media such as CD-R with many files, you can turn off "Detect Photoshop version" in <a href="05_settings.html">Settings</a> (the kind name and color dot are still shown when off). Files saved with Photoshop 2019 or earlier have no version record, so they stay blank even when this is on. Photoshop <kbd>.eps</kbd> is shown regardless of this setting.
+  Photoshop <kbd>.psd</kbd> / <kbd>.psb</kbd> and editing-capable <kbd>.pdf</kbd> files <b>also show the version by default</b>. However, reading it takes time, so if the wait bothers you on slow media such as CD-R with many files, you can turn off "Detect Photoshop version" in <a href="05_settings.html#photoshop">Settings</a> (the kind name and color dot are still shown when off). Files saved with Photoshop 2019 or earlier have no version record, so they stay blank even when this is on. Photoshop <kbd>.eps</kbd> is shown regardless of this setting.
 </div>
 
-<h2>Color dots at the start of each row</h2>
+<h2 id="dots">Color dots at the start of each row</h2>
 <p>At the left edge of each row in the Version column, a small colored dot shows the app family of a supported file. This makes it easy to tell at a glance which files are supported and which app each document belongs to. The dot remains even when the version cannot be read and the value is blank.</p>
 <ul>
   <li><b style="color:#FF3366">●</b> Pink: InDesign</li>
@@ -78,7 +79,7 @@
 </ul>
 <p>These color dots are printed the same way in prints and PDFs.</p>
 
-<h2>Version Detail (Detailed / Simple)</h2>
+<h2 id="detail">Version Detail (Detailed / Simple)</h2>
 <p>You can choose how precisely the version is shown, "Detailed" or "Simple." The difference is whether it shows down to the patch version (x.x.x) or limits it to (x.x).</p>
 <dl>
   <dt>Detailed (x.x.x)</dt>

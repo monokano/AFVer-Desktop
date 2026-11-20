@@ -54,8 +54,7 @@ final class PrintLayoutView: NSView {
         static let dateWidth: CGFloat = 86        // "yyyy/MM/dd HH:mm"（約80pt）に余白
         static let sizeWidth: CGFloat = 50        // 最大 "999 bytes"（約45pt）に余白
         static let versionWidth: CGFloat = 96     // 行頭カラードット（7pt+余白）ぶん拡張
-        static let kindWidth: CGFloat = 150
-        static let kindWidthNoVersion: CGFloat = 120  // バージョン列OFF時は種類列を狭め、名前列を広く
+        static let kindMinWidth: CGFloat = 100  // 名前列が窮屈なとき種類列を詰める下限（内容幅がこれ未満ならそのまま）
         static let nameMinWidth: CGFloat = 170  // 名前列の下限。バージョンON・縦向きの窮屈ケースで名前を広げる効果（種類が縮んで吸収）
     }
 
@@ -172,10 +171,12 @@ final class PrintLayoutView: NSView {
         }
     }
 
-    /// 変更日・サイズ・バージョン列を「ヘッダと内容の最長幅＋余白 pad」に合わせて算出する。
+    /// 変更日・サイズ・バージョン・種類列を「ヘッダと内容の最長幅＋余白 pad」に合わせて算出する
+    /// （＝画面の「列幅を調整」と同じ考え方を印刷では常に適用する。種類列は 2026-11-20 に固定幅から変更）。
     /// 固定値ではなく実データ依存（その印刷で実際に出る最長文字列に合わせる）。
     /// ・内容は本文フォント(9pt)、ヘッダ（列タイトル）は列ヘッダのフォント(8pt semibold)で測る。
     /// ・バージョンは行頭のカラードット＋余白(11pt)を内容幅に加える（drawRow と一致）。
+    /// ・種類は drawRow と同じ文字列（折り返しOFF・縦向き・バージョンON では " (.pdf)" 省略後）で測る。
     /// ・ヘッダも含めるのは「バージョン」見出しが版数より長く、内容だけだと見出しが切れるため。
     private func contentFittedFixedWidths() -> [String: CGFloat] {
         let rowFont = NSFont.systemFont(ofSize: Metrics.rowFontSize)
@@ -194,42 +195,31 @@ final class PrintLayoutView: NSView {
         var dateMax = headerWidth("date")
         var sizeMax = headerWidth("size")
         var versionMax = headerWidth("version")
+        var kindMax = headerWidth("kind")
+        let stripPDFSuffix = !columnOptions.wrap && isPortrait && versionMode   // drawRow と同条件
         for row in rows {
             let item = row.item
             dateMax = max(dateMax, width(item.displayDate, rowFont))
             sizeMax = max(sizeMax, width(item.displaySize, rowFont))
             let vShift = item.appFamily != nil ? dotShift : 0
             versionMax = max(versionMax, vShift + width(item.displayVersion, rowFont))
+            var kind = item.displayKindForList(versionMode: versionMode)
+            if stripPDFSuffix { kind = Self.kindWithoutPDFSuffix(kind) }
+            kindMax = max(kindMax, width(kind, rowFont))
         }
         return ["date": ceil(dateMax) + pad,
                 "size": ceil(sizeMax) + pad,
-                "version": ceil(versionMax) + pad]
-    }
-
-    /// 全行の名前を1行で表示するのに必要な「名前列の最大幅」。
-    /// 先頭オフセット（インデント＋▶＋アイコン＋余白4）＋名前テキスト幅 の行ごとの最大値。
-    /// 名前列が余っているとき内容幅まで詰める判定に使う（ZWSP は幅0なので素の name で測れる）。
-    private func longestNameColumnWidth() -> CGFloat {
-        let rowFont = NSFont.systemFont(ofSize: Metrics.rowFontSize)
-        var maxW: CGFloat = 0
-        for row in rows {
-            let lead = CGFloat(row.level) * Metrics.indentPerLevel
-                + Metrics.chevronWidth + Metrics.iconSize + 4
-            let textW = (row.item.name as NSString).size(withAttributes: [.font: rowFont]).width
-            maxW = max(maxW, lead + textW)
-        }
-        return maxW
+                "version": ceil(versionMax) + pad,
+                "kind": ceil(kindMax) + pad]
     }
 
     /// 各列の x 位置と幅を決める。固定幅列を確保した残りを名前列に割り当てる。
     /// 種類列の幅は「全列を表示したときの値」で決め、表示中の列構成では変えない。
     /// こうすることで、変更日／サイズを外しても種類列は伸び戻らず、空いた幅はすべて名前列に回る。
     private func computeColumnPositions(contentWidth: CGFloat) {
-        // 種類列の基準幅。バージョン列OFF（縦向き・種類が主役でない）では狭めて、
-        // 空いた幅を名前列へ回す。
-        let baseKindWidth = versionMode ? Metrics.kindWidth : Metrics.kindWidthNoVersion
-        // 変更日・サイズ・バージョンは内容に合わせた幅（最長文字列＋余白）。
+        // 変更日・サイズ・バージョン・種類はすべて内容に合わせた幅（最長文字列＋余白）。
         let fitted = contentFittedFixedWidths()
+        let baseKindWidth = fitted["kind"] ?? Metrics.kindMinWidth
         let baseFixed: [String: CGFloat] = [
             "date": fitted["date"] ?? Metrics.dateWidth,
             "size": fitted["size"] ?? Metrics.sizeWidth,
@@ -238,13 +228,15 @@ final class PrintLayoutView: NSView {
         ]
 
         // 種類列の幅は全列（変更日・サイズを含む）を基準に決める。
-        // 全列表示で名前列が最小幅を割る場合だけ、種類列を詰めて名前の最小幅(nameMinWidth)を確保する（種類の下限 100pt）。
+        // 全列表示で名前列が最小幅を割る場合だけ、種類列を詰めて名前の最小幅(nameMinWidth)を確保する
+        // （種類の下限 kindMinWidth。内容幅がもともと下限未満なら広げない）。
         var kindWidth = baseKindWidth
         let gapsAll = CGFloat(columns.count - 1) * Metrics.columnGap
         let fixedAll = columns.compactMap { baseFixed[$0.id] }.reduce(0, +)
         let nameIfAllShown = contentWidth - gapsAll - fixedAll
         if nameIfAllShown < Metrics.nameMinWidth {
-            kindWidth = max(100, baseKindWidth - (Metrics.nameMinWidth - nameIfAllShown))
+            let shrunk = baseKindWidth - (Metrics.nameMinWidth - nameIfAllShown)
+            kindWidth = min(baseKindWidth, max(Metrics.kindMinWidth, shrunk))
         }
 
         // 実際に表示する列で配置。種類は上で決めた固定幅、名前が残り（外した列ぶんも吸収）を取る。
@@ -253,17 +245,10 @@ final class PrintLayoutView: NSView {
         let cols = effectiveColumns
         let gaps = CGFloat(cols.count - 1) * Metrics.columnGap
         let fixedTotal = cols.compactMap { fixed[$0.id] }.reduce(0, +)
-        var nameWidth = max(Metrics.nameMinWidth, contentWidth - gaps - fixedTotal)
-
-        // 名前列が「実際の最長名＋9pt」より広く余る場合は、名前をその幅に詰めて
-        // 余りをすべて種類列へ回す（名前がブカブカなときだけ働く。長い名前で詰まって
-        // いるときは nameWidth ≤ 上限なので変化しない）。
-        let kindShown = cols.contains { $0.id == "kind" }
-        let nameCap = longestNameColumnWidth() + 9
-        if kindShown, nameWidth > nameCap {
-            fixed["kind"] = (fixed["kind"] ?? kindWidth) + (nameWidth - nameCap)
-            nameWidth = nameCap
-        }
+        // 余った幅はすべて名前列が吸収する（画面の「列幅を調整」・Finder のリスト表示と同じ）。
+        // ※以前は名前がブカブカなとき余りを種類列へ回していたが、種類列を内容幅にしたことで
+        //   種類の右に大きな余白が出たため廃止（2026-11-20）。
+        let nameWidth = max(Metrics.nameMinWidth, contentWidth - gaps - fixedTotal)
 
         columnX = [:]
         var x: CGFloat = 0
@@ -634,7 +619,7 @@ final class PrintLayoutView: NSView {
 /// 印刷時のアクセサリ設定（変更日／サイズの表示・折り返し）。印刷パネルのアクセサリと
 /// PrintLayoutView が共有する。PrintLayoutView が強参照するため、印刷パネルを閉じた後の
 /// 本描画でも確定値が残る。各値は UserDefaults に永続化し、次回の印刷・次回起動でも復元する
-/// （未設定の初回はすべて ON）。
+/// （未設定の初回は変更日・サイズ ON、折り返し OFF）。
 final class PrintColumnOptions {
     private static let showDateKey = "printShowDate"
     private static let showSizeKey = "printShowSize"
@@ -642,16 +627,16 @@ final class PrintColumnOptions {
 
     var showDate: Bool { didSet { UserDefaults.standard.set(showDate, forKey: Self.showDateKey) } }
     var showSize: Bool { didSet { UserDefaults.standard.set(showSize, forKey: Self.showSizeKey) } }
-    /// 名前・種類列をセル内で折り返すか（既定 ON）。OFF で従来の単一行
+    /// 名前・種類列をセル内で折り返すか（既定 OFF。2026-11-20 に ON から変更）。OFF で従来の単一行
     /// （名前は用紙全幅に1行オーバーレイ・種類は末尾省略）に戻る。
     var wrap: Bool { didSet { UserDefaults.standard.set(wrap, forKey: Self.wrapKey) } }
 
     init() {
         let ud = UserDefaults.standard
-        // 未設定（初回起動）は ON。object(forKey:) が nil のときだけ既定 true を採る。
+        // 未設定（初回起動）は変更日・サイズ ON、折り返し OFF。object(forKey:) が nil のときだけ既定値を採る。
         showDate = (ud.object(forKey: Self.showDateKey) as? Bool) ?? true
         showSize = (ud.object(forKey: Self.showSizeKey) as? Bool) ?? true
-        wrap     = (ud.object(forKey: Self.wrapKey)     as? Bool) ?? true
+        wrap     = (ud.object(forKey: Self.wrapKey)     as? Bool) ?? false
     }
 }
 

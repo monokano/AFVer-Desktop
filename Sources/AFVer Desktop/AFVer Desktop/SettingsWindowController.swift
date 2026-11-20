@@ -31,6 +31,7 @@ final class AppSettings: ObservableObject {
     private static let kindMismatchRedTextKey = "kindMismatchRedText"
     private static let showStatusBarKey = "showStatusBar"
     private static let detectPhotoshopVersionKey = "detectPhotoshopVersion"
+    private static let autoAdjustColumnWidthsKey = "autoAdjustColumnWidths"
 
     @Published var folderDoubleClickAction: FolderDoubleClickAction {
         didSet { UserDefaults.standard.set(folderDoubleClickAction.rawValue, forKey: Self.doubleClickKey) }
@@ -59,6 +60,13 @@ final class AppSettings: ObservableObject {
         }
     }
 
+    /// 列幅を自動的に調整するか（既定 true）。ON の間はリストの内容が変わるたび（読み込み・展開/折りたたみ・
+    /// バージョン取得の進行）に「列幅を調整」を自動で実行し、ツールバーの［列幅を調整］ボタンを隠す。
+    /// ※バージョン列の表示切替時の調整は本設定に関わらず常に行う。
+    @Published var autoAdjustColumnWidths: Bool {
+        didSet { UserDefaults.standard.set(autoAdjustColumnWidths, forKey: Self.autoAdjustColumnWidthsKey) }
+    }
+
     private init() {
         folderDoubleClickAction = FolderDoubleClickAction(
             rawValue: UserDefaults.standard.string(forKey: Self.doubleClickKey) ?? "") ?? .expand
@@ -69,48 +77,55 @@ final class AppSettings: ObservableObject {
         showStatusBar = (UserDefaults.standard.object(forKey: Self.showStatusBarKey) as? Bool) ?? true
         // 未設定（初回起動）は true＝既定 ON。object(forKey:) が nil のときだけ既定 true を採る。
         detectPhotoshopVersion = (UserDefaults.standard.object(forKey: Self.detectPhotoshopVersionKey) as? Bool) ?? true
+        // 未設定（初回起動）は true＝既定 ON。
+        autoAdjustColumnWidths = (UserDefaults.standard.object(forKey: Self.autoAdjustColumnWidthsKey) as? Bool) ?? true
     }
 }
 
 // MARK: - SettingsView（設定ウィンドウの中身）
 
 /// 設定ウィンドウの内容。共有 `AppSettings` 直結で即時反映する（OK/キャンセルは設けない＝macOS の設定標準）。
+/// システム設定と同じ見た目（`Form` ＋ `.grouped` の角丸グループ・右端スイッチ）にする（2026-11-20）。
 struct SettingsView: View {
     @ObservedObject private var settings = AppSettings.shared
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            // フォルダのダブルクリック（ラジオボタン）
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Folder Double-Click")
+        Form {
+            Section("List") {
+                // フォルダのダブルクリック（ラジオボタン）
                 Picker("Folder Double-Click", selection: $settings.folderDoubleClickAction) {
                     Text("Expand / Collapse").tag(FolderDoubleClickAction.expand)
                     Text("Open in New Window").tag(FolderDoubleClickAction.newWindow)
                 }
                 .pickerStyle(.radioGroup)
-                .labelsHidden()
-                .padding(.leading, 8)
+
+                // 列幅を自動的に調整する（既定 ON。OFF のときツールバーに［列幅を調整］ボタンを出す）
+                Toggle(isOn: $settings.autoAdjustColumnWidths) {
+                    Text("Adjust column widths automatically")
+                    Text("When off, use the Adjust Column Widths button in the toolbar.")
+                }
+
+                // リストの背景をストライプにする
+                Toggle("Stripe list background", isOn: $settings.listBackgroundStripe)
+
+                // 拡張子偽装時に種類名も赤文字にする（2つ目の Text は補足文として小さく表示される）
+                Toggle(isOn: $settings.kindMismatchRedText) {
+                    Text("Show kind in red for disguised extensions")
+                    Text("The ⚠ symbol stays red even when off.")
+                }
             }
 
-            Divider()
-
-            // リストの背景をストライプにする（チェックボックス）
-            Toggle(isOn: $settings.listBackgroundStripe) {
-                Text("Stripe list background")
-            }
-
-            // 拡張子偽装時に種類名も赤文字にする（チェックボックス）
-            Toggle(isOn: $settings.kindMismatchRedText) {
-                Text("Show kind in red for disguised extensions")
-            }
-
-            // Photoshop ネイティブ版（PSD/PSB・編集機能保持PDF）を検出する（チェックボックス・既定 OFF）
-            Toggle(isOn: $settings.detectPhotoshopVersion) {
-                Text("Detect Photoshop version")
+            Section("Version") {
+                // Photoshop ネイティブ版（PSD/PSB・編集機能保持PDF）を検出する（既定 ON）
+                Toggle(isOn: $settings.detectPhotoshopVersion) {
+                    Text("Detect Photoshop version")
+                    Text("Applies to PSD/PSB and PDF with Photoshop editing capabilities.")
+                }
             }
         }
-        .padding(20)
-        .frame(width: 340, alignment: .leading)
+        .formStyle(.grouped)
+        .toggleStyle(.switch)
+        .frame(width: 460)
         .fixedSize(horizontal: false, vertical: true)
     }
 }
