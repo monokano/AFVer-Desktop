@@ -61,7 +61,7 @@ final class AppSettings: ObservableObject {
     }
 
     /// 列幅を自動的に調整するか（既定 true）。ON の間はリストの内容が変わるたび（読み込み・展開/折りたたみ・
-    /// バージョン取得の進行）に「列幅を調整」を自動で実行し、ツールバーの［列幅を調整］ボタンを隠す。
+    /// バージョン取得の進行）に「列幅を調整」を自動で実行し、ツールバーの［列幅を調整］ボタンを隠す（※ツールバーは 2026-11-21 に廃止。手動は表示メニュー）。
     /// ※バージョン列の表示切替時の調整は本設定に関わらず常に行う。
     @Published var autoAdjustColumnWidths: Bool {
         didSet { UserDefaults.standard.set(autoAdjustColumnWidths, forKey: Self.autoAdjustColumnWidthsKey) }
@@ -99,10 +99,10 @@ struct SettingsView: View {
                 }
                 .pickerStyle(.radioGroup)
 
-                // 列幅を自動的に調整する（既定 ON。OFF のときツールバーに［列幅を調整］ボタンを出す）
+                // 列幅を自動的に調整する（既定 ON。OFF のときは表示メニューの［列幅を調整］で調整する）
                 Toggle(isOn: $settings.autoAdjustColumnWidths) {
                     Text("Adjust column widths automatically")
-                    Text("When off, use the Adjust Column Widths button in the toolbar.")
+                    Text("When off, choose Adjust Column Widths from the View menu.")
                 }
 
                 // リストの背景をストライプにする

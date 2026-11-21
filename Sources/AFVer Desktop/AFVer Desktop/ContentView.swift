@@ -24,6 +24,25 @@ struct ContentView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            // macOS 26+ はツールバー下に境界線が出ず（titlebarSeparatorStyle = .line も効かない）、
+            // リストのヘッダとの境目が曖昧になるため、macOS 13/15 と同じ線を自前で引く。
+            if #available(macOS 26.0, *) {
+                Divider()
+            }
+            // タイトルバーの下のボタンの列（ツールバーの代わり。標準の部品を普通の大きさで並べる）
+            ActionBarView(
+                folderURL: model.isFlatDrop ? nil : model.rootURL,
+                isFlatList: model.isFlatDrop && !model.rootItems.isEmpty,
+                hasContent: !model.rootItems.isEmpty,
+                showAdjustButton: !settings.autoAdjustColumnWidths,
+                versionOn: Binding(get: { model.showVersionColumn },
+                                   set: { model.setShowVersion($0) }),
+                versionDetail: Binding(get: { model.versionDetail },
+                                       set: { model.setVersionDetail($0) }),
+                onExpandAll: { model.expandAll() },
+                onCollapseAll: { model.collapseAll() },
+                onAdjustColumns: { model.adjustColumnWidths() },
+                onPrint: { model.printList() })
             ZStack {
                 if model.rootItems.isEmpty && !model.isLoading {
                     DropPlaceholder(isTargeted: model.isDropTargeted)
@@ -45,12 +64,15 @@ struct ContentView: View {
                 StatusBarView(summary: model.statusSummary)
             }
         }
-        .frame(minWidth: 400, minHeight: 300)
+        // 最小幅：ボタンの列の右側（約 330pt）の左にフォルダ名が読める幅を残す
+        .frame(minWidth: 500, minHeight: 300)
         // ファイルメニュー「Finderに表示」(⌘R) が最前面ウィンドウのモデルを参照できるようにする
         .focusedSceneValue(\.fileListModel, model)
         // バージョン精度メニューのチェックを「そのウィンドウの実効モード」に追従させる
         // （光学ディスク自動高速を含む。model は @StateObject なので versionDetail 変化で再描画→ライブ更新）
         .focusedSceneValue(\.effectiveVersionDetail, model.versionDetail)
+        // 表示メニュー「バージョン列を表示／隠す」の文言を、そのウインドウの状態に追従させる
+        .focusedSceneValue(\.showsVersionColumn, model.showVersionColumn)
         .background(WindowSizeMatcher())
         .background(WindowAccessor { window in
             model.hostWindow = window
@@ -59,19 +81,9 @@ struct ContentView: View {
             // hostWindow が解決したので出そろい判定（rootURL が先に来ていた場合の取りこぼし対策）。
             AppDelegate.shared?.noteBatchContentReady()
         })
-        .background(ToolbarConfigurator(
+        .background(WindowTitleConfigurator(
             folderURL: model.isFlatDrop ? nil : model.rootURL,
-            hasContent: !model.rootItems.isEmpty,
-            isFlatList: model.isFlatDrop && !model.rootItems.isEmpty,
-            versionOn: model.showVersionColumn,
-            onToggleVersion: { model.setShowVersion($0) },
-            versionDetail: model.versionDetail,
-            onSetVersionDetail: { model.setVersionDetail($0) },
-            showAdjustButton: !settings.autoAdjustColumnWidths,
-            onExpandAll: { model.expandAll() },
-            onCollapseAll: { model.collapseAll() },
-            onAdjustColumns: { model.adjustColumnWidths() },
-            onPrint: { model.printList() }
+            isFlatList: model.isFlatDrop && !model.rootItems.isEmpty
         ))
         .onDrop(of: [.fileURL], isTargeted: $model.isDropTargeted) { providers in
             model.handleDrop(providers: providers)
@@ -184,6 +196,8 @@ struct ContentView: View {
             stripeBackground: settings.listBackgroundStripe,
             kindMismatchRedText: settings.kindMismatchRedText,
             autoAdjustColumns: settings.autoAdjustColumnWidths,
+            showVersionColumn: model.showVersionColumn,
+            onToggleVersionColumn: { model.setShowVersion($0) },
             onColumnWidthChanged: { id, w in
                 // 列幅 KVO は reconcileColumns（updateNSView 内）の setFrame/tc.width 変更で
                 // 同期発火しうる。columnWidths セッターは @AppStorage 書き込み＝objectWillChange
@@ -219,40 +233,190 @@ struct ContentView: View {
     }
 }
 
+// MARK: - ActionBarView
+
+/// タイトルバーの下に置くボタンの列（2026-11-21。ツールバーの代わり）。
+/// macOS 26/27 のツールバーは部品を大きく描き直すため、ウインドウの中身として標準の部品を並べる。
+/// 左：フォルダのアイコン＋名前＋⌄（パスのメニュー）
+/// 右：［すべて展開］［すべて閉じる］（［列幅を調整］）［プリント］　「バージョン」スイッチ［詳細｜簡易］
+private struct ActionBarView: View {
+    /// 左端に出すフォルダ（未ドロップ、またはフラット表示なら nil）
+    let folderURL: URL?
+    /// ファイル等のフラット表示か（true のとき左端は「ファイル一覧」だけ）
+    let isFlatList: Bool
+    let hasContent: Bool
+    /// ［列幅を調整］を出すか（設定「列幅を自動的に調整」が OFF のときだけ）
+    let showAdjustButton: Bool
+    @Binding var versionOn: Bool
+    @Binding var versionDetail: VersionDetail
+    let onExpandAll: () -> Void
+    let onCollapseAll: () -> Void
+    let onAdjustColumns: () -> Void
+    let onPrint: () -> Void
+    @Environment(\.controlActiveState) private var controlActiveState
+
+    /// 非アクティブなウインドウでは、標準の部品と同じく薄くする
+    private var isActive: Bool { controlActiveState != .inactive }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 4) {
+                folderHeader
+                    .layoutPriority(-1)   // 狭いときは名前を省略して右側の操作を優先する
+                Spacer(minLength: 12)
+                iconButton("chevron.down", String(localized: "Expand All"), onExpandAll)
+                iconButton("chevron.up", String(localized: "Collapse All"), onCollapseAll)
+                if showAdjustButton {
+                    iconButton("arrow.left.and.right", String(localized: "Adjust Column Widths"),
+                               onAdjustColumns)
+                }
+                iconButton("printer", String(localized: "Print…"), onPrint)
+                    .padding(.trailing, 12)
+                Toggle(String(localized: "Version"), isOn: $versionOn)
+                    .toggleStyle(.switch)
+                    .controlSize(.mini)
+                    .fixedSize()
+                    .help(String(localized: "Adobe Document Creation Version"))
+                    .padding(.trailing, 4)
+                Picker(String(localized: "Version Detail"), selection: $versionDetail) {
+                    Text(String(localized: "Detailed")).tag(VersionDetail.full)
+                    Text(String(localized: "Simple")).tag(VersionDetail.fast)
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .controlSize(.small)
+                .fixedSize()
+                .help(String(localized: "Version Detail"))
+                // バージョンの精度なので、スイッチが OFF の間はグレーアウト
+                .disabled(!versionOn)
+            }
+            .padding(.leading, 12)
+            .padding(.trailing, 10)
+            .frame(height: 44)
+            Divider()
+        }
+        .background(Color(nsColor: .windowBackgroundColor))
+    }
+
+    /// パスのメニューの ⌄（9pt・細字のテンプレート画像）
+    private static let pathChevron: NSImage = {
+        let config = NSImage.SymbolConfiguration(pointSize: 9, weight: .light)
+        let image = NSImage(systemSymbolName: "chevron.down",
+                            accessibilityDescription: String(localized: "Show Path"))?
+            .withSymbolConfiguration(config) ?? NSImage()
+        image.isTemplate = true
+        return image
+    }()
+
+    /// 左端：フォルダのアイコン（32pt）＋名前（15pt 太字）＋⌄（パスのメニュー）。
+    /// フラット表示は「ファイル一覧」だけ、空のウインドウは何も出さない。
+    @ViewBuilder
+    private var folderHeader: some View {
+        if let url = folderURL {
+            HStack(spacing: 6) {
+                Image(nsImage: NSWorkspace.shared.icon(forFile: url.path))
+                    .resizable()
+                    .frame(width: 32, height: 32)
+                Text(FileManager.default.displayName(atPath: url.path))
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundStyle(isActive ? HierarchicalShapeStyle.primary
+                                              : HierarchicalShapeStyle.secondary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                Menu {
+                    ForEach(FolderPath.entries(of: url)) { entry in
+                        Button { entry.open() } label: {
+                            Label { Text(entry.title) } icon: { Image(nsImage: entry.icon) }
+                        }
+                    }
+                } label: {
+                    // ［すべて展開］の ⌄ と区別するため、小さく細くする。
+                    // Menu のラベルは AppKit が描くため .font が効かない。大きさ・太さを指定した画像を渡す
+                    Image(nsImage: Self.pathChevron)
+                }
+                .menuStyle(.borderlessButton)
+                .menuIndicator(.hidden)
+                .fixedSize()
+                .help(String(localized: "Show Path"))
+            }
+        } else if isFlatList {
+            Text(String(localized: "File List"))
+                .font(.system(size: 15, weight: .bold))
+                .foregroundStyle(isActive ? HierarchicalShapeStyle.primary
+                                          : HierarchicalShapeStyle.secondary)
+                .lineLimit(1)
+        }
+    }
+
+    private func iconButton(_ symbol: String, _ title: String,
+                            _ action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: symbol)
+                .font(.system(size: 14))
+                .frame(width: 24, height: 22)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.borderless)
+        // 枠なしボタンの既定の色は薄すぎるため、有効なら通常の文字色。
+        // 無効・ウインドウが非アクティブのときは薄くする（標準の部品と同じ振る舞い）
+        .foregroundStyle(hasContent && isActive
+                         ? HierarchicalShapeStyle.primary : HierarchicalShapeStyle.tertiary)
+        .help(title)
+        .accessibilityLabel(title)
+        .disabled(!hasContent)
+    }
+}
+
 // MARK: - StatusBarView
 
 /// ウインドウ下部のステータスバー（高さ28px）。Finder 風に中央寄せで、
 /// 「N項目」（選択時は「N項目中のM項目を選択」）とアプリ系統別のカラードット集計を並べる。
 private struct StatusBarView: View {
     let summary: FileListModel.StatusSummary
+    @State private var showBreakdown = false
 
     var body: some View {
         VStack(spacing: 0) {
             Divider()
-            HStack(spacing: 18) {
-                Text(countText)
-                ForEach(summary.perFamily, id: \.family) { entry in
-                    // ドット集計はドット＋番号のみ（「項目」なし・ドットと番号の間は 4pt）。
-                    HStack(spacing: 4) {
-                        Group {
-                            if entry.family == .epsOther {
-                                Circle().strokeBorder(Color(nsColor: entry.family.markerColor), lineWidth: 1.5)
-                            } else {
-                                Circle().fill(Color(nsColor: entry.family.markerColor))
-                            }
-                        }
-                        .frame(width: 8, height: 8)
-                        Text(String(entry.count))
+            Group {
+                if summary.allFamilies.isEmpty {
+                    // バージョン列OFF：ドットも内訳も無いのでクリック不可のテキストだけ
+                    statusContent
+                } else {
+                    // 項目数＋ドットをまとめて1つのクリック範囲にし、種別ごとの内訳をポップオーバーで出す
+                    Button { showBreakdown.toggle() } label: {
+                        statusContent.contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .help(String(localized: "Click to show counts by file type"))
+                    .popover(isPresented: $showBreakdown, arrowEdge: .top) {
+                        FamilyBreakdownView(entries: summary.allFamilies)
                     }
                 }
             }
-            .font(.system(size: 12))
-            .foregroundColor(.secondary)
             .frame(maxWidth: .infinity)
             .frame(height: 27)
         }
         .frame(height: 28)
+        // ステータスバーをつまんでウインドウを動かせるようにする（タイトルバーと同じ。Default Apps と同じ方式）。
+        // 内訳ボタン（項目数＋ドット）の上はクリックを優先するため動かない。
+        .modifier(WindowDraggable())
         .background(Color(nsColor: .windowBackgroundColor))
+    }
+
+    private var statusContent: some View {
+        HStack(spacing: 18) {
+            Text(countText)
+            ForEach(summary.perFamily, id: \.family) { entry in
+                // ドット集計はドット＋番号のみ（「項目」なし・ドットと番号の間は 4pt）。
+                HStack(spacing: 4) {
+                    FamilyDot(family: entry.family)
+                    Text(String(entry.count))
+                }
+            }
+        }
+        .font(.system(size: 12))
+        .foregroundColor(.secondary)
     }
 
     /// 左端のテキスト。未選択＝「123項目」／選択＝「123項目中の3項目を選択」（和欧間スペースなし）。
@@ -262,6 +426,84 @@ private struct StatusBarView: View {
                           Int64(summary.selected), Int64(summary.total))
         }
         return String(format: String(localized: "%lld items"), Int64(summary.total))
+    }
+}
+
+/// ドラッグでウインドウを動かせるようにする（Default Apps の同名 modifier と同じ）。
+/// - macOS 15 以降：標準の WindowDragGesture（文字の上からでも動かせる）
+/// - macOS 14 以下：背景の NSView で動かす（文字の上では動かない）
+private struct WindowDraggable: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(macOS 15.0, *) {
+            content
+                .contentShape(Rectangle())
+                .gesture(WindowDragGesture())
+                .allowsWindowActivationEvents(true)
+        } else {
+            content.background(WindowDragArea())
+        }
+    }
+}
+
+/// ドラッグでウインドウを動かす領域（背景に敷く。macOS 14 以下用）
+private struct WindowDragArea: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSView { DragView() }
+    func updateNSView(_ nsView: NSView, context: Context) {}
+
+    private final class DragView: NSView {
+        override func mouseDown(with event: NSEvent) {
+            window?.performDrag(with: event)
+        }
+    }
+}
+
+/// 行頭ドットと同じ見た目の系統マーカー（EPS（Ai/Ps以外）は中空リング）。
+private struct FamilyDot: View {
+    let family: AppFamily
+    var body: some View {
+        Group {
+            if family == .epsOther {
+                Circle().strokeBorder(Color(nsColor: family.markerColor), lineWidth: 1.5)
+            } else {
+                Circle().fill(Color(nsColor: family.markerColor))
+            }
+        }
+        .frame(width: 8, height: 8)
+    }
+}
+
+/// ステータスバーの内訳ポップオーバー。全5系統を「● 名前｜件数（右揃え）」の2列で並べ、0件の行は薄く表示する。
+struct FamilyBreakdownView: View {
+    let entries: [(family: AppFamily, count: Int)]
+
+    var body: some View {
+        Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 6) {
+            ForEach(entries, id: \.family) { entry in
+                GridRow {
+                    HStack(spacing: 6) {
+                        FamilyDot(family: entry.family)
+                        Text(Self.name(of: entry.family))
+                    }
+                    Text(String(entry.count))
+                        .monospacedDigit()
+                        .gridColumnAlignment(.trailing)
+                }
+                .opacity(entry.count == 0 ? 0.4 : 1)
+            }
+        }
+        .font(.system(size: 12))
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+    }
+
+    static func name(of family: AppFamily) -> String {
+        switch family {
+        case .indesign:    return "InDesign"
+        case .illustrator: return "Illustrator"
+        case .photoshop:   return "Photoshop"
+        case .pdf:         return "PDF"
+        case .epsOther:    return String(localized: "EPS (non-Ai/Ps)")
+        }
     }
 }
 
@@ -923,16 +1165,17 @@ final class FileListModel: ObservableObject {
         var selected: Int
         /// 系統別ドット数（0件は除外・表示順で整列）。バージョン列OFF時は空。
         var perFamily: [(family: AppFamily, count: Int)]
+        /// 内訳ポップオーバー用の全5系統（0件も含む・表示順）。バージョン列OFF時は空。
+        var allFamilies: [(family: AppFamily, count: Int)]
     }
 
     var statusSummary: StatusSummary {
-        // 表記規約の並び：InDesign → Illustrator → PDF → Photoshop
-        let order: [AppFamily] = [.indesign, .illustrator, .pdf, .photoshop, .epsOther]
-        let per = showVersionColumn ? order.compactMap { fam -> (AppFamily, Int)? in
-            let c = visibleFamilyCounts[fam] ?? 0
-            return c > 0 ? (fam, c) : nil
-        } : []
-        return StatusSummary(total: visibleTotal, selected: selectedCount, perFamily: per)
+        // 表記規約の並び：InDesign → Illustrator → Photoshop → PDF → EPS（2026-11-21 変更）
+        let order: [AppFamily] = [.indesign, .illustrator, .photoshop, .pdf, .epsOther]
+        let all = showVersionColumn ? order.map { ($0, visibleFamilyCounts[$0] ?? 0) } : []
+        let per = all.filter { $0.1 > 0 }
+        return StatusSummary(total: visibleTotal, selected: selectedCount,
+                             perFamily: per, allFamilies: all)
     }
 
     func cancelLoading() {
@@ -1085,7 +1328,8 @@ final class FileListModel: ObservableObject {
             let op = NSPrintOperation(view: printView, printInfo: printInfo)
             op.jobTitle = header.title
             op.printPanel.options.formUnion([.showsOrientation, .showsPaperSize, .showsPreview])
-            op.printPanel.addAccessoryController(PrintColumnOptionsController(options: columnOptions))
+            op.printPanel.addAccessoryController(PrintColumnOptionsController(options: columnOptions,
+                                                                       versionMode: versionOn))
             if let keyWindow {
                 op.runModal(for: keyWindow, delegate: nil, didRun: nil, contextInfo: nil)
             } else {
@@ -1105,7 +1349,16 @@ private struct VersionDetailFocusedKey: FocusedValueKey {
     typealias Value = VersionDetail
 }
 
+private struct ShowsVersionColumnFocusedKey: FocusedValueKey {
+    typealias Value = Bool
+}
+
 extension FocusedValues {
+    /// 最前面ウィンドウで「バージョン」列を表示しているか。表示メニューの文言追従用。
+    var showsVersionColumn: Bool? {
+        get { self[ShowsVersionColumnFocusedKey.self] }
+        set { self[ShowsVersionColumnFocusedKey.self] = newValue }
+    }
     var fileListModel: FileListModel? {
         get { self[FileListModelFocusedKey.self] }
         set { self[FileListModelFocusedKey.self] = newValue }
