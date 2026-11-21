@@ -201,7 +201,7 @@ final class PrintLayoutView: NSView {
             let item = row.item
             dateMax = max(dateMax, width(item.displayDate, rowFont))
             sizeMax = max(sizeMax, width(item.displaySize, rowFont))
-            let vShift = item.appFamily != nil ? dotShift : 0
+            let vShift = (item.appFamily != nil && columnOptions.showDots) ? dotShift : 0
             versionMax = max(versionMax, vShift + width(item.displayVersion, rowFont))
             var kind = item.displayKindForList(versionMode: versionMode)
             if stripPDFSuffix { kind = Self.kindWithoutPDFSuffix(kind) }
@@ -450,10 +450,11 @@ final class PrintLayoutView: NSView {
                          in: NSRect(x: pos.x, y: textY, width: pos.width, height: 13),
                          font: font, color: secondaryColor, alignment: .right)
             case "version":
-                // 対象ファイルは行頭にアプリ系統のカラードット（画面表示と同じ）
+                // 対象ファイルは行頭にアプリ系統のカラードット（画面表示と同じ）。
+                // 印刷パネルの「色ドット」OFF（既定）では描かず、文字を列の左端に詰める。
                 var verX = pos.x
                 var verW = pos.width
-                if let family = item.appFamily {
+                if let family = item.appFamily, columnOptions.showDots {
                     let d: CGFloat = 6
                     let dotRect = NSRect(x: pos.x, y: y + (Metrics.rowHeight - d) / 2,
                                          width: d, height: d)
@@ -616,17 +617,20 @@ final class PrintLayoutView: NSView {
 
 // MARK: - PrintColumnOptions
 
-/// 印刷時のアクセサリ設定（変更日／サイズの表示・折り返し）。印刷パネルのアクセサリと
+/// 印刷時のアクセサリ設定（変更日／サイズ／色ドットの表示・折り返し）。印刷パネルのアクセサリと
 /// PrintLayoutView が共有する。PrintLayoutView が強参照するため、印刷パネルを閉じた後の
 /// 本描画でも確定値が残る。各値は UserDefaults に永続化し、次回の印刷・次回起動でも復元する
-/// （未設定の初回は変更日・サイズ ON、折り返し OFF）。
+/// （未設定の初回は変更日・サイズ ON、色ドット・折り返し OFF）。
 final class PrintColumnOptions {
     private static let showDateKey = "printShowDate"
     private static let showSizeKey = "printShowSize"
     private static let wrapKey     = "printWrapText"
+    private static let showDotsKey = "printShowColorDots"
 
     var showDate: Bool { didSet { UserDefaults.standard.set(showDate, forKey: Self.showDateKey) } }
     var showSize: Bool { didSet { UserDefaults.standard.set(showSize, forKey: Self.showSizeKey) } }
+    /// バージョン列の行頭にアプリ系統の色ドットを描くか（既定 OFF。2026-11-21 追加）。
+    var showDots: Bool { didSet { UserDefaults.standard.set(showDots, forKey: Self.showDotsKey) } }
     /// 名前・種類列をセル内で折り返すか（既定 OFF。2026-11-20 に ON から変更）。OFF で従来の単一行
     /// （名前は用紙全幅に1行オーバーレイ・種類は末尾省略）に戻る。
     var wrap: Bool { didSet { UserDefaults.standard.set(wrap, forKey: Self.wrapKey) } }
@@ -637,6 +641,7 @@ final class PrintColumnOptions {
         showDate = (ud.object(forKey: Self.showDateKey) as? Bool) ?? true
         showSize = (ud.object(forKey: Self.showSizeKey) as? Bool) ?? true
         wrap     = (ud.object(forKey: Self.wrapKey)     as? Bool) ?? false
+        showDots = (ud.object(forKey: Self.showDotsKey) as? Bool) ?? false
     }
 }
 
@@ -650,12 +655,17 @@ final class PrintColumnOptionsController: NSViewController, NSPrintPanelAccessor
     @objc dynamic var showDate: Bool
     @objc dynamic var showSize: Bool
     @objc dynamic var wrap: Bool
+    @objc dynamic var showDots: Bool
+    /// バージョン列を印刷するか。OFF のときは色ドットのチェックボックスを選べなくする。
+    private let versionMode: Bool
 
-    init(options: PrintColumnOptions) {
+    init(options: PrintColumnOptions, versionMode: Bool) {
         self.options = options
+        self.versionMode = versionMode
         self.showDate = options.showDate
         self.showSize = options.showSize
         self.wrap = options.wrap
+        self.showDots = options.showDots
         super.init(nibName: nil, bundle: nil)
         title = "AFVer Desktop"
     }
@@ -672,14 +682,18 @@ final class PrintColumnOptionsController: NSViewController, NSPrintPanelAccessor
         let wrapBox = NSButton(checkboxWithTitle: String(localized: "Wrap Text"),
                                target: self, action: #selector(toggleWrap(_:)))
         wrapBox.state = options.wrap ? .on : .off
+        let dotsBox = NSButton(checkboxWithTitle: String(localized: "Color Dots"),
+                               target: self, action: #selector(toggleDots(_:)))
+        dotsBox.state = options.showDots ? .on : .off
+        dotsBox.isEnabled = versionMode   // バージョン列が無いときはドットも無い
 
-        let stack = NSStackView(views: [dateBox, sizeBox, wrapBox])
+        let stack = NSStackView(views: [dateBox, sizeBox, dotsBox, wrapBox])
         stack.orientation = .vertical
         stack.alignment = .leading
         stack.spacing = 8
         stack.translatesAutoresizingMaskIntoConstraints = false
 
-        let container = NSView(frame: NSRect(x: 0, y: 0, width: 260, height: 108))
+        let container = NSView(frame: NSRect(x: 0, y: 0, width: 260, height: 132))
         container.addSubview(stack)
         NSLayoutConstraint.activate([
             stack.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 20),
@@ -708,13 +722,20 @@ final class PrintColumnOptionsController: NSViewController, NSPrintPanelAccessor
         wrap = on           // KVO 発火 → プレビュー再描画
     }
 
+    @objc private func toggleDots(_ sender: NSButton) {
+        let on = (sender.state == .on)
+        options.showDots = on   // 本描画用に共有モデルを更新
+        showDots = on           // KVO 発火 → プレビュー再描画
+    }
+
     // チェック変更でプレビューを更新させる
-    func keyPathsForValuesAffectingPreview() -> Set<String> { ["showDate", "showSize", "wrap"] }
+    func keyPathsForValuesAffectingPreview() -> Set<String> { ["showDate", "showSize", "wrap", "showDots"] }
 
     func localizedSummaryItems() -> [[NSPrintPanel.AccessorySummaryKey: String]] {
         var shown: [String] = []
         if options.showDate { shown.append(String(localized: "Date Modified")) }
         if options.showSize { shown.append(String(localized: "Size")) }
+        if versionMode && options.showDots { shown.append(String(localized: "Color Dots")) }
         if options.wrap { shown.append(String(localized: "Wrap Text")) }
         let desc = shown.isEmpty ? String(localized: "None") : shown.joined(separator: ", ")
         return [[.itemName: "AFVer Desktop", .itemDescription: desc]]

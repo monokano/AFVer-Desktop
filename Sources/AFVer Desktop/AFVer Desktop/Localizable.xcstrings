@@ -124,12 +124,34 @@
         }
       }
     },
+    "Click to show counts by file type" : {
+      "comment" : "Status bar tooltip: click opens the per-file-type breakdown popover",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クリックで種別ごとの内訳を表示"
+          }
+        }
+      }
+    },
     "Collapse All" : {
       "localizations" : {
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "すべて閉じる"
+          }
+        }
+      }
+    },
+    "Color Dots" : {
+      "comment" : "Print panel checkbox: draw app color dots at the start of the Version column",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "色ドット"
           }
         }
       }
@@ -220,6 +242,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "フォルダ・ファイルをドロップ"
+          }
+        }
+      }
+    },
+    "EPS (non-Ai/Ps)" : {
+      "comment" : "Status bar breakdown popover: generic EPS not made by Illustrator/Photoshop",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EPS（Ai / Ps以外）"
           }
         }
       }
@@ -333,6 +366,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ステータスバーを隠す"
+          }
+        }
+      }
+    },
+    "Hide Version Column" : {
+      "comment" : "View menu: hide the Version column",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バージョン列を隠す"
           }
         }
       }
@@ -630,6 +674,17 @@
         }
       }
     },
+    "Show Version Column" : {
+      "comment" : "View menu: show the Version column",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バージョン列を表示"
+          }
+        }
+      }
+    },
     "Simple" : {
       "localizations" : {
         "ja" : {
@@ -733,13 +788,13 @@
         }
       }
     },
-    "When off, use the Adjust Column Widths button in the toolbar." : {
+    "When off, choose Adjust Column Widths from the View menu." : {
       "comment" : "Settings window: caption under the auto-adjust column widths toggle",
       "localizations" : {
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "オフのときはツールバーの［列幅を調整］ボタンで調整します。"
+            "value" : "オフのときは表示メニューの［列幅を調整］で調整します。"
           }
         }
       }

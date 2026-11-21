@@ -44,7 +44,7 @@
 </ul>
 
 <h3>Expand All and Collapse All</h3>
-<p>Use the toolbar buttons or the "View" menu to operate on the whole list at once.</p>
+<p>Use the buttons in the button bar or the "View" menu to operate on the whole list at once.</p>
 <dl>
   <dt>Expand All (<kbd>⌥⌘→</kbd>)</dt>
   <dd>Loads and expands every subfolder. If loading takes time, progress is shown and you can cancel partway. If you cancel, the list is expanded as far as it was loaded.</dd>
@@ -70,9 +70,9 @@
 <p>By default, "Adjust column widths automatically" is on in <a href="05_settings.html#auto-adjust">Settings</a>, and the widths are adjusted automatically whenever the list changes.</p>
 <ul>
   <li>They are adjusted when you open a folder, expand or collapse folders, and as versions are read.</li>
-  <li>When you show or hide the Version column with the toolbar switch, the widths are adjusted whether this setting is on or off.</li>
+  <li>When you show or hide the Version column, the widths are adjusted whether this setting is on or off.</li>
 </ul>
-<p>When "Adjust column widths automatically" is off, columns keep the widths you set by hand. To fit them to their contents, choose "Adjust Column Widths" (<kbd>⌘J</kbd>) in the "View" menu, or click the "Adjust Column Widths" button in the toolbar (shown only when the setting is off).</p>
+<p>When "Adjust column widths automatically" is off, columns keep the widths you set by hand. To fit them to their contents, choose "Adjust Column Widths" (<kbd>⌘J</kbd>) in the "View" menu, or click the "Adjust Column Widths" button in the button bar (shown only when the setting is off).</p>
 
 <div class="note">
   <strong>Tip</strong>
@@ -111,10 +111,11 @@
 <h2>Compare in multiple windows</h2>
 <p>Use "New Window" (<kbd>⌘N</kbd>) to add empty windows. You can place different folders or volumes side by side to compare them, or print them one after another. Use "Open in New Window" from a list row's right-click menu to open a subfolder in a separate window.</p>
 
-<h2>Toolbar</h2>
+<h2 id="button-bar">Button bar</h2>
+<p>The bar below the title bar, above the list. The title bar shows only the name of the open folder.</p>
 <dl>
   <dt>Folder name (far left)</dt>
-  <dd>The icon and name of the open folder. Click the <strong>⌄</strong> on its right to open a hierarchy menu from the parent folders through the volume to the computer, and reveal each level in Finder. When a "File List" is shown, there is no common parent, so it simply reads "File List."</dd>
+  <dd>The icon and name of the open folder. Click the small <strong>⌄</strong> on its right to open a hierarchy menu from the parent folders through the volume to the computer, and reveal each level in Finder. When a "File List" is shown, there is no common parent, so it simply reads "File List."</dd>
 
   <dt>Expand All, Collapse All, and Print buttons</dt>
   <dd>Run "Expand All," "Collapse All," and "Print" with a single click.</dd>
@@ -122,11 +123,11 @@
   <dt>Adjust Column Widths button</dt>
   <dd>Fits each column to its contents. Shown only when "Adjust column widths automatically" is off in <a href="05_settings.html#auto-adjust">Settings</a> (when it is on, widths are adjusted automatically, so the button is not needed).</dd>
 
-  <dt>Version Detail (left of the switch)</dt>
-  <dd>Switches how precisely the version is shown, between "Detailed" and "Simple." See <a href="03_version.html#detail">Version Detail (Detailed / Simple)</a>.</dd>
-
-  <dt>Switch (far right)</dt>
+  <dt>"Version" switch</dt>
   <dd>Turn it on to show the <a href="03_version.html">Adobe document creation version</a>. It is on by default.</dd>
+
+  <dt>Version Detail (far right)</dt>
+  <dd>Switches how precisely the version is shown, between "Detailed" and "Simple." Unavailable while the "Version" switch is off. See <a href="03_version.html#detail">Version Detail (Detailed / Simple)</a>.</dd>
 </dl>
 
 <h2>Status bar</h2>
@@ -136,7 +137,7 @@
   <dd>Shows the number of items currently displayed in the window, along with the number selected (for example, <kbd>3 of 123 selected</kbd>).</dd>
 
   <dt>Per-app totals (color dots)</dt>
-  <dd>When the Version column is shown, it lists the number of target files for each app, using the same colors as the <a href="03_version.html#dots">color dots at the start of each row</a> (for example, <b style="color:#FF3366">●</b>8 <b style="color:#FF9A00">●</b>10 <b style="color:#8E8E93">●</b>5 <b style="color:#31A8FF">●</b>8). This total also reflects only what is currently displayed in the window.</dd>
+  <dd>When the Version column is shown, it lists the number of target files for each app, using the same colors as the <a href="03_version.html#dots">color dots at the start of each row</a> (for example, <b style="color:#FF3366">●</b>8 <b style="color:#FF9A00">●</b>10 <b style="color:#31A8FF">●</b>8 <b style="color:#8E8E93">●</b>5). This total also reflects only what is currently displayed in the window. Click the item count or the dots to see a named breakdown for InDesign, Illustrator, Photoshop, PDF, and EPS (non-Ai/Ps).</dd>
 </dl>
 </body>
 </html>

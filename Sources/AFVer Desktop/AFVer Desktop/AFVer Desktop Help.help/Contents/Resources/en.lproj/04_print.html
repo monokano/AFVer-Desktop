@@ -14,7 +14,7 @@
 <h2>Printing</h2>
 <ol class="steps">
   <li>Expand the list to the state you want to print (use Expand All if needed).</li>
-  <li>Choose "Print…" (<kbd>⌘P</kbd>) from the "File" menu, or click the Print button in the toolbar.</li>
+  <li>Choose "Print…" (<kbd>⌘P</kbd>) from the "File" menu, or click the Print button in the button bar.</li>
   <li>The standard macOS print dialog opens. Check the preview, then print or save as PDF.</li>
 </ol>
 
@@ -26,7 +26,7 @@
 <h3>What is printed</h3>
 <ul>
   <li><strong>Header</strong>: the icon, name, and total size of the open folder (or volume). The print date and time appears at the far right.</li>
-  <li><strong>List</strong>: the same columns as in the window. Folders show a mark indicating their expanded state (∨ / &gt;). Icons are printed as well. When the Version column is shown, the <a href="03_version.html#dots">color dots at the start of each row</a> are printed too.</li>
+  <li><strong>List</strong>: the same columns as in the window. Folders show a mark indicating their expanded state (∨ / &gt;). Icons are printed as well. When the Version column is shown and "Color Dots" is turned on in the print options, the <a href="03_version.html#dots">color dots at the start of each row</a> are printed too.</li>
   <li><strong>Footer</strong>: the page number.</li>
 </ul>
 
@@ -45,6 +45,9 @@
 <dl>
   <dt>Date Modified / Size</dt>
   <dd>Whether to include these columns in the print. Removing them gives the Name column that much more width.</dd>
+
+  <dt>Color Dots</dt>
+  <dd>Whether to print each app's <a href="03_version.html#dots">color dot</a> at the start of the Version column (off by default). When off, the version text starts at the left edge of the column. Unavailable when the Version column is not shown.</dd>
 
   <dt>Wrap Text</dt>
   <dd>Turns wrapping of names and kinds on or off. When on, text that does not fit the column width wraps so the full text is printed. When off, each is printed on a single line (off by default).</dd>

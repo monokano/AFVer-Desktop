@@ -52,6 +52,10 @@ struct OutlineList: NSViewRepresentable {
     /// 設定「列幅を自動的に調整」（既定 true）。true の間はリストの内容が変わるたび
     /// （読み込み・展開/折りたたみ・バージョン取得の進行）に列幅を自動調整する。
     var autoAdjustColumns = true
+    /// 「バージョン」列を表示しているか（列ヘッダの右クリックメニューのチェックに使う）
+    var showVersionColumn = false
+    /// 列ヘッダの右クリックメニューで「バージョン」を選んだとき、新しい表示状態を通知する
+    var onToggleVersionColumn: ((Bool) -> Void)?
     var onColumnWidthChanged: ((String, CGFloat) -> Void)?
     /// ヘッダのドラッグで列順が変わったとき、名前列を除いた「表示中の列ID順」を通知する。
     var onColumnOrderChanged: (([String]) -> Void)?
@@ -157,7 +161,12 @@ struct OutlineList: NSViewRepresentable {
         ov.outlineTableColumn = ov.tableColumns.first
 
         // コンパクトなヘッダ（高さのみカスタム）
-        ov.headerView = CompactHeaderView()
+        let header = CompactHeaderView()
+        // 右クリックで列の表示を切り替えるメニュー（Finder の列ヘッダと同じ）
+        header.menuProvider = { [weak coordinator = context.coordinator] in
+            coordinator?.makeHeaderMenu()
+        }
+        ov.headerView = header
 
         // ヘッダ文字色をスイッチ状態に応じて適用（Finder 風：変更日・サイズ等はグレー）
         applyHeaderTextColors(ov)
@@ -386,6 +395,21 @@ struct OutlineList: NSViewRepresentable {
 
     final class Coordinator: NSObject, NSOutlineViewDataSource, NSOutlineViewDelegate {
         var parent: OutlineList
+
+        /// 列ヘッダの右クリックメニュー。切り替えられるのは「バージョン」列だけ（他の列は常に表示）。
+        func makeHeaderMenu() -> NSMenu {
+            let menu = NSMenu()
+            let item = NSMenuItem(title: String(localized: "Version"),
+                                  action: #selector(toggleVersionColumn(_:)), keyEquivalent: "")
+            item.target = self
+            item.state = parent.showVersionColumn ? .on : .off
+            menu.addItem(item)
+            return menu
+        }
+
+        @objc func toggleVersionColumn(_ sender: Any?) {
+            parent.onToggleVersionColumn?(!parent.showVersionColumn)
+        }
         var displayItems: [FileItem] = []
         var rootIDs: [UUID] = []
         var currentSort: SortState = SortState(columnID: "name", ascending: true)
@@ -1295,6 +1319,12 @@ private class PaddedHeaderCell: NSTableHeaderCell {
 /// ソート・リサイズは標準の NSTableHeaderView の動作に任せる。
 class CompactHeaderView: NSTableHeaderView {
     private let headerHeight: CGFloat = 22
+    /// 右クリックで出すメニューを作る（開くたびに作り、チェックを最新にする）
+    var menuProvider: (() -> NSMenu?)?
+
+    override func menu(for event: NSEvent) -> NSMenu? {
+        menuProvider?() ?? super.menu(for: event)
+    }
 
     override var intrinsicContentSize: NSSize {
         NSSize(width: NSView.noIntrinsicMetric, height: headerHeight)

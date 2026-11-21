@@ -75,6 +75,8 @@ struct FileCommands: Commands {
     // ContentView の .focusedSceneValue(\.effectiveVersionDetail, model.versionDetail) が値を流し、
     // model.versionDetail が変わると ContentView 再描画 → この FocusedValue が更新 → Commands 再評価。
     @FocusedValue(\.effectiveVersionDetail) private var effectiveDetail
+    // 「バージョン列を表示／隠す」の文言を最前面ウィンドウの状態に追従させる
+    @FocusedValue(\.showsVersionColumn) private var showsVersionColumn
     // フォーカスが無い（ウィンドウ未表示）ときのフォールバック用に保存値も保持する。
     @AppStorage("versionDetail") private var versionDetailRaw = VersionDetail.full.rawValue
     // ステータスバー表示トグル用。共有設定を監視してメニュー文言（表示/隠す）を追従させる。
@@ -103,6 +105,13 @@ struct FileCommands: Commands {
             .keyboardShortcut("j", modifiers: .command)   // ⌘J
             .disabled(model == nil)
             Divider()
+            // バージョン列の表示/非表示（列ヘッダの右クリックメニューと同じ。ウインドウごと・保存される）
+            Button(showsVersionColumn == true
+                   ? String(localized: "Hide Version Column")
+                   : String(localized: "Show Version Column")) {
+                if let model { model.setShowVersion(!model.showVersionColumn) }
+            }
+            .disabled(model == nil)
             // バージョンの精度（詳細=xref / 高速=ヘッダのみ）。CD-R 等で取得が遅いとき高速を選ぶ
             Menu(String(localized: "Version Detail")) {
                 Picker(String(localized: "Version Detail"),
