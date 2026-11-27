@@ -7,6 +7,7 @@ macOS用デスクトップアプリ
 ## ダウンロード
 
 [AFVer-Desktop-330.zip](https://github.com/monokano/AFVer-Desktop/releases/download/3.3.0/AFVer-Desktop-330.zip)
+<br>[更新内容](https://github.com/monokano/AFVer-Desktop/releases)
 
 ## 用途
 
