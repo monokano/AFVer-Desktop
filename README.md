@@ -4,6 +4,10 @@
 
 macOS用デスクトップアプリ
 
+## ダウンロード
+
+[AFVer-Desktop-330.zip](https://github.com/monokano/AFVer-Desktop/releases/download/3.3.0/AFVer-Desktop-330.zip)
+
 ## 用途
 
 AFVer Desktop は、InDesign や Illustrator のさまざまな形式のファイルを一つのリストに並べ、それぞれの作成バージョンを一度に確認できるユーティリティアプリです。どのファイルがどのバージョンで保存されたのかを一覧で見渡せます。
